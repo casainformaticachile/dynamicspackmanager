@@ -1,13 +1,17 @@
 {
-  "name": "order-program-server",
+  "name": "dynamics-packmanager",
   "version": "1.0.0",
-  "description": "Server for OrderProgram app",
+  "description": "Active Orders Manager",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
+  "author": "casainformaticachile",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^2.6.7"
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
