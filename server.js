@@ -8,7 +8,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// CAMBIO PARA RENDER: el puerto viene de la variable de entorno
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(__dirname));
@@ -34,10 +33,11 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// --- Rutas para archivos locales (Loads, Lines, Priorities) ---
+// --- Rutas para archivos locales (Loads, Lines, Priorities, Passwords) ---
 const LOADS_FILE_PATH = path.join(__dirname, 'loads.json');
 const LINES_FILE_PATH = path.join(__dirname, 'lines.json');
-const PRIORITIES_FILE_PATH = path.join(__dirname, 'priorities.json'); // NUEVO ARCHIVO
+const PRIORITIES_FILE_PATH = path.join(__dirname, 'priorities.json');
+const PASSWORDS_FILE_PATH = path.join(__dirname, 'passwords.json'); // NUEVO ARCHIVO DE CLAVES
 
 // Función auxiliar para leer archivos JSON de forma segura
 async function readJsonFile(filePath, defaultValue = {}) {
@@ -53,6 +53,27 @@ async function readJsonFile(filePath, defaultValue = {}) {
         throw error;
     }
 }
+
+// --- NUEVA RUTA PARA VERIFICAR CONTRASEÑAS ---
+app.post('/api/verify-password', async (req, res) => {
+    const { type, password } = req.body;
+    if (!type || !password) {
+        return res.status(400).json({ success: false, message: 'Falta tipo o contraseña.' });
+    }
+
+    try {
+        const passwords = await readJsonFile(PASSWORDS_FILE_PATH);
+        if (passwords[type] && passwords[type] === password) {
+            res.json({ success: true });
+        } else {
+            res.json({ success: false });
+        }
+    } catch (error) {
+        console.error('Error verificando la contraseña:', error);
+        res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
 
 // --- Rutas para LOADS ---
 app.get('/api/loads', async (req, res) => {
