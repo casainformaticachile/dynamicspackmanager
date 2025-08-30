@@ -8,7 +8,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+// CAMBIO PARA RENDER: el puerto viene de la variable de entorno
+const PORT = process.env.PORT || 3000;
 
 app.use(express.static(__dirname));
 app.use(express.json());
@@ -159,7 +160,6 @@ app.post('/api/sync_all', async (req, res) => {
         res.status(500).json({ error: 'No se pudo sincronizar todos los archivos.' });
     }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Servidor funcionando en http://localhost:${PORT}`);
