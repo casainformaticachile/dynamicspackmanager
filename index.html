@@ -14,6 +14,31 @@
             background-color: #f0f2f5;
             color: #333;
         }
+
+        /* === INICIO: NUEVAS ANIMACIONES DE PARPADEO === */
+        @keyframes blinker-orange {
+            50% {
+                background-color: #ff8c00; /* Naranja Neón */
+                color: #ffffff;
+                font-weight: bold;
+            }
+        }
+        .flash-orange {
+            animation: blinker-orange 2s linear infinite;
+        }
+
+        @keyframes blinker-red {
+            50% {
+                background-color: #ff0000; /* Rojo Neón */
+                color: #ffffff;
+                font-weight: bold;
+            }
+        }
+        .flash-red {
+            animation: blinker-red 0.8s linear infinite;
+        }
+        /* === FIN: NUEVAS ANIMACIONES DE PARPADEO === */
+
         .container {
             display: flex;
             flex-direction: column;
@@ -47,15 +72,15 @@
             margin: 4px 0 20px 2px;
         }
         .timer-section {
-            min-width: 280px; /* Adjusted width */
+            min-width: 280px;
             margin-left: auto;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centered items */
+            align-items: center;
             font-size: 13px;
             color: #444;
             background: #f3f5f7;
-            padding: 8px 14px; /* Adjusted padding */
+            padding: 8px 14px;
             border-radius: 10px;
             box-shadow: 0 2px 7px rgba(0,0,0,0.05);
             margin-top: 12px;
@@ -63,16 +88,16 @@
         .timer-title {
             font-size: 12px;
             color: #888;
-            margin-bottom: 5px; /* Space between title and controls */
+            margin-bottom: 5px;
         }
         .timer-controls {
             display: flex;
             align-items: center;
-            gap: 8px; /* Space between control elements */
+            gap: 8px;
         }
         .timer-minutes-input {
             width: 36px;
-            padding: 4px 6px; /* Adjusted padding */
+            padding: 4px 6px;
             border-radius: 5px;
             border: 1px solid #bbb;
             font-size: 1em;
@@ -84,7 +109,7 @@
             border: none;
             border-radius: 5px;
             font-size: 1em;
-            padding: 5px 12px; /* Adjusted padding */
+            padding: 5px 12px;
             cursor: pointer;
             font-weight: bold;
             transition: background 0.2s;
@@ -95,14 +120,13 @@
         .timer-btn:active { background: #0056b3; }
         .timer-display {
             font-family: monospace;
-            font-size: 1.4em; /* Slightly larger font */
-            min-width: 55px; /* Adjusted width */
+            font-size: 1.4em;
+            min-width: 55px;
             text-align: right;
             color: #1c2e4a;
             font-weight: bold;
         }
         
-        /* NEW: Main wrapper for controls area */
         .main-controls-wrapper {
             display: flex;
             justify-content: space-between;
@@ -110,10 +134,9 @@
             gap: 20px;
         }
 
-        /* NEW: Container for filters and buttons with a max-width */
         .controls-container {
-            flex-grow: 1; /* Allows it to take space */
-            max-width: 1250px; /* This is the key change */
+            flex-grow: 1;
+            max-width: 1250px;
         }
 
         .filters-bar {
@@ -178,7 +201,7 @@
             gap: 12px 16px;
             margin: 6px 0 18px 0;
         }
-        .toggle-btn, .action-btn { /* Combined styles for buttons */
+        .toggle-btn, .action-btn {
             font-family: 'Arial Narrow', Arial, sans-serif;
             font-weight: 700;
             color: white;
@@ -197,7 +220,7 @@
         .action-btn:hover { background-color: #333333; }
         .action-btn.active { background-color: #6f42c1; }
 
-        .multiselect-filter {
+        .multiselect-filter, .multiselect-cell {
             position: relative;
         }
         .multiselect-btn {
@@ -212,9 +235,9 @@
             text-align: left;
             width: 100%;
             box-sizing: border-box;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal; 
+            overflow: visible;
+            text-overflow: clip;
         }
         .multiselect-content {
             display: none;
@@ -241,7 +264,21 @@
         .multiselect-content input {
             margin-right: 8px;
         }
-
+        .multiselect-content label.disabled {
+            color: #aaa;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+        .multiselect-cell .multiselect-btn {
+            background: transparent;
+            border: none;
+            text-align: center;
+            font-weight: bold;
+        }
+        .multiselect-cell .multiselect-content {
+            left: 50%;
+            transform: translateX(-50%);
+        }
 
         .table-container { flex-grow: 1; overflow: hidden; display: flex; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .table-wrapper { width: 100%; overflow-y: auto; }
@@ -258,10 +295,10 @@
         }
         th, td {
             padding: 8px 10px;
-            text-align: left;
+            text-align: center;
             border-bottom: 1px solid #e0e0e0;
             white-space: normal;
-            text-align: center;
+            vertical-align: top;
         }
         th:nth-child(1), td:nth-child(1) { width: 5%; }
         th:nth-child(2), td:nth-child(2) { width: 6%; }
@@ -306,8 +343,8 @@
         .loading, .error { padding: 40px 20px; text-align: center; color: #6c757d; font-size: 1.5em; }
         .error { color: #dc3545; font-weight: bold; }
         .numeric-cell { text-align: right; }
-        .totals-row { display: none; } /* Ocultamos la fila de totales en vista de escritorio por defecto */
-        .totals-row.show-on-desktop td { /* Mostramos cuando la tabla es tabla */
+        .totals-row { display: none; }
+        .totals-row.show-on-desktop td {
             position: sticky;
             top: 40px;
             background-color: #e9ecef;
@@ -315,7 +352,7 @@
             z-index: 1;
             font-size: 18px;
         }
-        .line-select, .load-select, .priority-select {
+        .load-select, .priority-select {
             width: 100%;
             border: none;
             background: transparent;
@@ -332,11 +369,10 @@
             cursor: not-allowed;
             opacity: 0.6;
         }
-        .line-select option, .load-select option, .priority-select option {
+        .load-select option, .priority-select option {
             text-align: center;
         }
 
-        /* ============== NUEVOS ESTILOS RESPONSIVOS ============== */
         @media (max-width: 768px) {
             .container { padding: 0 10px; }
             h1 { font-size: 2em; }
@@ -354,7 +390,6 @@
             }
             .filter-select, .multiselect-btn { width: 100%; box-sizing: border-box; }
 
-            /* La magia para la tabla */
             table, thead, tbody, th, td, tr {
                 display: block;
             }
@@ -379,9 +414,9 @@
                 border-bottom: 1px solid #eee;
                 position: relative;
                 padding-left: 50%;
-                text-align: right; /* Alineamos el valor a la derecha */
+                text-align: right;
                 white-space: normal;
-                width: 100% !important; /* Anulamos anchos fijos */
+                width: 100% !important;
                 box-sizing: border-box;
             }
 
@@ -393,12 +428,11 @@
                 width: 45%;
                 padding-right: 10px;
                 white-space: nowrap;
-                text-align: left; /* Alineamos la etiqueta a la izquierda */
+                text-align: left;
                 font-weight: bold;
-                content: attr(data-label); /* Usaremos un atributo para las etiquetas */
+                content: attr(data-label);
             }
 
-            /* Asignamos las etiquetas a cada celda */
             td:nth-of-type(1):before { content: "COMMERCIAL STATUS"; }
             td:nth-of-type(2):before { content: "PACKING STATUS"; }
             td:nth-of-type(3):before { content: "LINE"; }
@@ -426,22 +460,11 @@
             .col-boxes-pallet:before { content: "BOXES PALLET"; }
             .col-pound-box:before { content: "POUND BOX"; }
 
-            /* Ajustes finos para celdas con elementos complejos */
-            td[style*="padding:0"] {
-                padding-left: 0; /* Quitamos padding para selects */
-            }
-            td[style*="padding:0"]:before {
-                left: 10px; /* Posicionamos la etiqueta */
-                padding-left: 0;
-            }
-            .line-select, .load-select, .priority-select {
-                width: 50%;
-                float: right;
-                font-size: 1.1em;
-            }
+            td[style*="padding:0"] { padding-left: 0; }
+            td[style*="padding:0"]:before { left: 10px; padding-left: 0; }
+            .load-select, .priority-select { width: 50%; float: right; font-size: 1.1em; }
             .address-link { font-size: 0.9em; }
 
-            /* Re-mostrar columnas ocultas que se controlan con botones */
             body.show-price .col-price,
             body.show-address .col-address,
             body.show-receiver .col-receiver,
@@ -542,237 +565,23 @@
                 </div>
             </div>
             <div class="info-panel-placeholder">
-                <!-- This is the new empty space for future content -->
             </div>
         </div>
 
         <div id="table-container" class="table-container"><p class="loading">Cargando órdenes...</p></div>
     </div>
     <script>
-        // ========== LÓGICA DE AUTENTICACIÓN Y ESTADO DE BLOQUEO ==========
-        let unlockedColumns = {
-            line: false,
-            priority: false,
-            load: false,
-        };
-
-        async function handleAuthAction(type) {
-            const isCurrentlyUnlocked = (type === 'all')
-                ? (unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load)
-                : unlockedColumns[type];
-
-            if (isCurrentlyUnlocked) {
-                // --- LOCK ACTION ---
-                if (type === 'all') {
-                    unlockedColumns.line = false;
-                    unlockedColumns.priority = false;
-                    unlockedColumns.load = false;
-                } else {
-                    unlockedColumns[type] = false;
-                }
-                updateActionButtonsState();
-                applyFiltersAndRender();
-            } else {
-                // --- UNLOCK ACTION ---
-                const password = prompt(`Enter password to unlock "${type}":`);
-                if (password === null) return; // User cancelled
-
-                try {
-                    const response = await fetch('/api/verify-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ type, password })
-                    });
-                    const result = await response.json();
-                    
-                    if (result.success) {
-                        if (type === 'all') {
-                            unlockedColumns.line = true;
-                            unlockedColumns.priority = true;
-                            unlockedColumns.load = true;
-                        } else {
-                            unlockedColumns[type] = true;
-                        }
-                        updateActionButtonsState();
-                        applyFiltersAndRender();
-                    } else {
-                        alert('Invalid password');
-                    }
-                } catch (error) {
-                    console.error('Error during password verification:', error);
-                    alert('An error occurred. Please try again.');
-                }
-            }
-        }
-        
-        function updateActionButtonsState() {
-            // Update Line button
-            const setLineBtn = document.getElementById('setLineBtn');
-            setLineBtn.classList.toggle('active', unlockedColumns.line);
-            setLineBtn.textContent = unlockedColumns.line ? 'Block Line' : 'Set Line';
-
-            // Update Priority button
-            const setPriorityBtn = document.getElementById('setPriorityBtn');
-            setPriorityBtn.classList.toggle('active', unlockedColumns.priority);
-            setPriorityBtn.textContent = unlockedColumns.priority ? 'Block Priority' : 'Set Priority';
-
-            // Update Load button
-            const setLoadBtn = document.getElementById('setLoadBtn');
-            setLoadBtn.classList.toggle('active', unlockedColumns.load);
-            setLoadBtn.textContent = unlockedColumns.load ? 'Block Load' : 'Set Load';
-
-            // Update All button
-            const setAllBtn = document.getElementById('setAllBtn');
-            const allUnlocked = unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load;
-            setAllBtn.classList.toggle('active', allUnlocked);
-            setAllBtn.textContent = allUnlocked ? 'Block All' : 'Set All';
-        }
-
-        // ========== TEMPORIZADOR Y UPDATE ==========
-        let timerInterval = null;
-        let timerRunning = false;
-        let timerSeconds = 0;
-
-        const timerBtn = document.getElementById('timerBtn');
-        const timerMinutesInput = document.getElementById('timerMinutes');
-        const timerDisplay = document.getElementById('timerDisplay');
-        const updateBtn = document.getElementById('updateBtn');
-
-        function formatTimer(sec) {
-            if (!sec || sec <= 0) return "-";
-            let m = Math.floor(sec / 60);
-            let s = sec % 60;
-            return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
-        }
-
-        function startTimer() {
-            if (timerRunning) return;
-            timerSeconds = Math.max(1, parseInt(timerMinutesInput.value,10)||5) * 60;
-            timerRunning = true;
-            timerBtn.textContent = 'Stop';
-            timerBtn.classList.add('timer-stop');
-            timerMinutesInput.disabled = true;
-            updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                timerSeconds--;
-                updateTimerDisplay();
-                if (timerSeconds <= 0) {
-                    refreshData();
-                    timerSeconds = Math.max(1, parseInt(timerMinutesInput.value,10)||5) * 60; // reinicia el timer automáticamente
-                    updateTimerDisplay();
-                }
-            }, 1000);
-        }
-        function stopTimer(reset=true) {
-            timerRunning = false;
-            clearInterval(timerInterval);
-            timerInterval = null;
-            timerBtn.textContent = 'Play';
-            timerBtn.classList.remove('timer-stop');
-            timerMinutesInput.disabled = false;
-            if (reset) {
-                timerDisplay.textContent = '-';
-            }
-        }
-        function updateTimerDisplay() {
-            timerDisplay.textContent = formatTimer(timerSeconds);
-        }
-        timerBtn.addEventListener('click', () => {
-            if (timerRunning) stopTimer();
-            else startTimer();
-        });
-        updateBtn.addEventListener('click', refreshData);
-
-        // ========== LÓGICA DE TABLA/FILTROS ==========
+        // ========== GLOBAL STATE ==========
+        let unlockedColumns = { line: false, priority: false, load: false };
+        let timerInterval = null, timerRunning = false, timerSeconds = 0;
+        let allOrders = [], lineAssignments = {}, priorityAssignments = {}, selectedShipDates = new Set();
         const { DateTime } = luxon;
-        const tableContainer = document.getElementById('table-container');
         const dateFormat = 'M/d/yyyy';
         const ALL_LINES = ['LINE 1', 'LINE 2', 'LINE 3', 'LINE 4'];
         const LOAD_COLORS = [ { background: '#333333', text: '#FFFFFF' }, { background: '#999999', text: '#000000' } ];
-        let allOrders = [];
-        let lineAssignments = {};
-        let priorityAssignments = {};
-        let selectedShipDates = new Set();
-
-        function saveAndRender(payload = {}) {
-            applyFiltersAndRender();
-            const fetchPromises = [];
-            if (payload.priorities) {
-                fetchPromises.push(fetch('/api/priorities', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload.priorities) }).catch(e => ({error: 'priorities', details: e})));
-            }
-            if (payload.loads) {
-                 fetchPromises.push(fetch('/api/loads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload.loads) }).catch(e => ({error: 'loads', details: e})));
-            }
-            if (payload.lines) {
-                 fetchPromises.push(fetch('/api/lines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload.lines) }).catch(e => ({error: 'lines', details: e})));
-            }
-            Promise.all(fetchPromises).then(results => {
-                const failed = results.filter(r => r && r.error);
-                if (failed.length > 0) {
-                    alert(`Error guardando los siguientes datos: ${failed.map(f => f.error).join(', ')}. La página puede estar desincronizada. Por favor, recargue.`);
-                    console.error("Errores de guardado:", failed);
-                }
-            });
-        }
-        function resequencePriorities() {
-            const sortedPrioritizedLoads = Object.entries(priorityAssignments)
-                .sort(([, prioA], [, prioB]) => prioA - prioB)
-                .map(([lId]) => lId);
-            const finalPriorities = {};
-            sortedPrioritizedLoads.forEach((lId, index) => {
-                finalPriorities[lId] = index + 1;
-            });
-            priorityAssignments = finalPriorities;
-            return finalPriorities;
-        }
-        function handlePriorityChange(loadId, newPriorityStr) {
-            const newPriority = newPriorityStr ? parseInt(newPriorityStr, 10) : null;
-            const oldPriority = priorityAssignments[loadId];
-            if (newPriority === oldPriority) return;
-            if (newPriority) {
-                for (const lId in priorityAssignments) {
-                    if (priorityAssignments[lId] >= newPriority) {
-                        priorityAssignments[lId]++;
-                    }
-                }
-                priorityAssignments[loadId] = newPriority;
-            } else {
-                delete priorityAssignments[loadId];
-            }
-            const finalPriorities = resequencePriorities();
-            saveAndRender({ priorities: finalPriorities });
-        }
-        window.handlePriorityChange = handlePriorityChange;
-        function handleLoadChange(selectedOrderId, newLoad) {
-            const orderIdAsNumber = parseInt(selectedOrderId, 10);
-            const targetOrder = allOrders.find(o => o.id_marketer_order === orderIdAsNumber);
-            if (!targetOrder) { console.error(`No se encontró la orden con ID: ${selectedOrderId}`); return; }
-            const oldLoad = targetOrder.load;
-            if (oldLoad === newLoad) return;
-            const commonOrderNumber = targetOrder.order_number;
-            const siblingOrders = allOrders.filter(o => o.order_number === commonOrderNumber);
-            const payload = {};
-            const updatesForServer = [];
-            siblingOrders.forEach(order => {
-                order.load = newLoad;
-                updatesForServer.push({ orderId: order.id_marketer_order, load: newLoad || null });
-            });
-            payload.loads = { updates: updatesForServer };
-            saveAndRender(payload);
-        }
-        window.handleLoadChange = handleLoadChange;
-        function handleLineChange(orderId, standardId, newLine) {
-            const assignmentKey = `${orderId}-${standardId}`;
-            if (newLine) {
-                lineAssignments[assignmentKey] = newLine;
-            } else {
-                delete lineAssignments[assignmentKey];
-            }
-            saveAndRender({ lines: { assignmentKey, line: newLine || null } });
-        }
-        window.handleLineChange = handleLineChange;
-        function getNextLoadId(id) { if (!id) return 'A'; let carry = true; let chars = id.split(''); for (let i = chars.length - 1; i >= 0 && carry; i--) { if (chars[i] === 'Z') { chars[i] = 'A'; carry = true; } else { chars[i] = String.fromCharCode(chars[i].charCodeAt(0) + 1); carry = false; } } if (carry) { chars.unshift('A'); } return chars.join(''); }
-        function compareLoads(a, b) { const loadA = a || 'ZZZ'; const loadB = b || 'ZZZ'; if (loadA.length !== loadB.length) { return loadA.length - loadB.length; } return loadA.localeCompare(loadB); }
+        
+        // ========== DOM ELEMENTS ==========
+        const tableContainer = document.getElementById('table-container');
         const filters = {
             commercialStatus: document.getElementById('commercialStatusFilter'),
             packingStatus: document.getElementById('packingStatusFilter'),
@@ -785,441 +594,411 @@
             load: document.getElementById('loadFilter')
         };
         const filterKeys = Object.keys(filters);
-        const timeframeStaticOptions = [ { value: "all_time", text: "All Time" }, { value: "today_past", text: "Today & Past" }, { value: "through_tomorrow", text: "Through Tomorrow" }, { value: "tomorrow", text: "Tomorrow" }, { value: "this_week", text: "This Week" }, { value: "next_week", text: "Next Week" } ];
-        function getPackingStatus(order) {
-            const assignmentKey = `${order.id_marketer_order}-${order.codigo_producto}`;
-            if (lineAssignments[assignmentKey]) {
-                return 'being_packed';
+
+        // ========== AUTH & LOCKING ==========
+        async function handleAuthAction(type) {
+            const isCurrentlyUnlocked = (type === 'all') ? (unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load) : unlockedColumns[type];
+            if (isCurrentlyUnlocked) {
+                if (type === 'all') { unlockedColumns.line = unlockedColumns.priority = unlockedColumns.load = false; } else { unlockedColumns[type] = false; }
+                updateActionButtonsState();
+                applyFiltersAndRender();
+            } else {
+                const password = prompt(`Enter password to unlock "${type}":`);
+                if (password === null) return;
+                try {
+                    const response = await fetch('/api/verify-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, password }) });
+                    const result = await response.json();
+                    if (result.success) {
+                        if (type === 'all') { unlockedColumns.line = unlockedColumns.priority = unlockedColumns.load = true; } else { unlockedColumns[type] = true; }
+                        updateActionButtonsState();
+                        applyFiltersAndRender();
+                    } else { alert('Invalid password'); }
+                } catch (error) { console.error('Error during password verification:', error); alert('An error occurred.'); }
             }
-            const cajasPorPallet = parseFloat(order.cajas_por_pallet) || 0;
-            if (cajasPorPallet === 0) return 'pending';
-            const requestNum = (parseFloat(order.cantidad_solicitada) || 0) / cajasPorPallet;
-            const assignedNum = (parseFloat(order.cantidad_asignada) || 0) / cajasPorPallet;
-            const shippedNum = (parseFloat(order.cantidad_despachada) || 0) / cajasPorPallet;
-            if ((requestNum > 0 && assignedNum >= requestNum) || (requestNum > 0 && requestNum.toFixed(2) === shippedNum.toFixed(2))) return 'done';
-            if (assignedNum > 0) return 'partially';
-            return 'pending';
         }
-        function applyFiltersAndRender() {
-            const currentSelections = {};
-            filterKeys.forEach(key => { currentSelections[key] = filters[key].value; });
+        function updateActionButtonsState() {
+            document.getElementById('setLineBtn').classList.toggle('active', unlockedColumns.line);
+            document.getElementById('setLineBtn').textContent = unlockedColumns.line ? 'Block Line' : 'Set Line';
+            document.getElementById('setPriorityBtn').classList.toggle('active', unlockedColumns.priority);
+            document.getElementById('setPriorityBtn').textContent = unlockedColumns.priority ? 'Block Priority' : 'Set Priority';
+            document.getElementById('setLoadBtn').classList.toggle('active', unlockedColumns.load);
+            document.getElementById('setLoadBtn').textContent = unlockedColumns.load ? 'Block Load' : 'Set Load';
+            const allUnlocked = unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load;
+            document.getElementById('setAllBtn').classList.toggle('active', allUnlocked);
+            document.getElementById('setAllBtn').textContent = allUnlocked ? 'Block All' : 'Set All';
+        }
 
-            let filteredForTable = allOrders.filter(order => filterKeys.every(key => checkMatch(order, key, currentSelections[key])));
+        // ========== TIMER ==========
+        function formatTimer(sec) { if (!sec || sec <= 0) return "-"; let m = Math.floor(sec / 60); let s = sec % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
+        function updateTimerDisplay() { document.getElementById('timerDisplay').textContent = formatTimer(timerSeconds); }
+        function stopTimer(reset=true) { timerRunning = false; clearInterval(timerInterval); timerInterval = null; document.getElementById('timerBtn').textContent = 'Play'; document.getElementById('timerBtn').classList.remove('timer-stop'); document.getElementById('timerMinutes').disabled = false; if (reset) { document.getElementById('timerDisplay').textContent = '-'; } }
+        function startTimer() { if (timerRunning) return; timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; timerRunning = true; document.getElementById('timerBtn').textContent = 'Stop'; document.getElementById('timerBtn').classList.add('timer-stop'); document.getElementById('timerMinutes').disabled = true; updateTimerDisplay(); timerInterval = setInterval(() => { timerSeconds--; updateTimerDisplay(); if (timerSeconds <= 0) { refreshData(); timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; updateTimerDisplay(); } }, 1000); }
 
-            if (selectedShipDates.size > 0) {
-                filteredForTable = filteredForTable.filter(order => selectedShipDates.has(order.fecha_envio));
-            }
-
-            if (filters.load.value !== "all") {
-                filteredForTable = filteredForTable.filter(order => (order.load === filters.load.value));
-                const seen = new Set();
-                filteredForTable = filteredForTable.filter(order => {
-                    const key = `${order.id_marketer_order}-${order.codigo_producto}`;
-                    if (seen.has(key)) return false;
-                    seen.add(key);
-                    return true;
-                });
-            }
-
-            filterKeys.forEach(keyToUpdate => {
-                if (keyToUpdate === 'commercialStatus' || keyToUpdate === 'packingStatus') return;
-                const relevantData = allOrders.filter(order => filterKeys.every(key => key === keyToUpdate ? true : checkMatch(order, key, currentSelections[key])));
-                populateFilterOptions(keyToUpdate, relevantData, currentSelections[keyToUpdate], filteredForTable);
+        // ========== DATA HANDLING & LOGIC ==========
+        function genericSave(endpoint, payload) {
+            return fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
+        }
+        
+        function handleSaveResponse(promises) {
+            Promise.all(promises)
+            .then(responses => {
+                const failed = responses.filter(r => !r.ok);
+                if (failed.length > 0) {
+                    alert(`Error guardando datos. La página puede estar desincronizada. Por favor, recargue.`);
+                    console.error("Errores de guardado:", failed);
+                }
+            })
+            .catch(error => {
+                alert(`Error de red al guardar. Por favor, recargue.`);
+                console.error("Error de red:", error);
+            });
+        }
+
+        function handleLineChange(orderId, standardId, selectedLines) {
+            const key = `${orderId}-${standardId}`;
             
-            populateShipDateFilter(filteredForTable);
-            renderTable(filteredForTable);
+            if (selectedLines && selectedLines.length > 0) {
+                lineAssignments[key] = selectedLines;
+            } else {
+                delete lineAssignments[key];
+            }
+            applyFiltersAndRender();
+
+            const payloadForServer = { assignmentKey: key, lines: selectedLines || [] };
+            
+            handleSaveResponse([ genericSave('/api/lines', payloadForServer) ]);
+        }
+
+        function resequencePriorities() { 
+            const sortedLoads = Object.entries(priorityAssignments).sort(([, a], [, b]) => a - b).map(([lId]) => lId);
+            const final = {};
+            sortedLoads.forEach((lId, i) => { final[lId] = i + 1; });
+            priorityAssignments = final;
+            return final;
+        }
+
+        function handlePriorityChange(loadId, newPriorityStr) {
+            const newP = newPriorityStr ? parseInt(newPriorityStr, 10) : null;
+            const oldP = priorityAssignments[loadId];
+            if (newP === oldP) return;
+
+            if (newP) {
+                for (const lId in priorityAssignments) {
+                    if (priorityAssignments[lId] >= newP) priorityAssignments[lId]++;
+                }
+                priorityAssignments[loadId] = newP;
+            } else {
+                delete priorityAssignments[loadId];
+            }
+            
+            const finalPriorities = resequencePriorities();
+            applyFiltersAndRender();
+            handleSaveResponse([ genericSave('/api/priorities', finalPriorities) ]);
+        }
+
+        function handleLoadChange(orderId, newLoad) {
+            const target = allOrders.find(o => o.id_marketer_order === parseInt(orderId, 10));
+            if (!target || target.load === newLoad) return;
+            const siblings = allOrders.filter(o => o.order_number === target.order_number);
+            const updates = [];
+            siblings.forEach(s => {
+                s.load = newLoad;
+                updates.push({ orderId: s.id_marketer_order, load: newLoad || null });
+            });
+            applyFiltersAndRender();
+            
+            handleSaveResponse([ genericSave('/api/loads', { updates }) ]);
+        }
+        
+        function getNextLoadId(id) { if (!id) return 'A'; let carry = true, chars = id.split(''); for (let i = chars.length - 1; i >= 0 && carry; i--) { if (chars[i] === 'Z') { chars[i] = 'A'; carry = true; } else { chars[i] = String.fromCharCode(chars[i].charCodeAt(0) + 1); carry = false; } } if (carry) chars.unshift('A'); return chars.join(''); }
+        function compareLoads(a, b) { const la = a || 'ZZZ', lb = b || 'ZZZ'; return la.length !== lb.length ? la.length - lb.length : la.localeCompare(lb); }
+        function getPackingStatus(order) { 
+            const key = `${order.id_marketer_order}-${order.codigo_producto}`; 
+            const lines = lineAssignments[key]; 
+            if (lines && Array.isArray(lines) && lines.length > 0) return 'being_packed'; 
+            const req = (parseFloat(order.cantidad_solicitada) || 0) / (parseFloat(order.cajas_por_pallet) || 1), ass = (parseFloat(order.cantidad_asignada) || 0) / (parseFloat(order.cajas_por_pallet) || 1), ship = (parseFloat(order.cantidad_despachada) || 0) / (parseFloat(order.cajas_por_pallet) || 1); if ((req > 0 && ass >= req) || (req > 0 && req.toFixed(2) === ship.toFixed(2))) return 'done'; if (ass > 0) return 'partially'; return 'pending'; 
+        }
+
+        // ========== FILTERING & RENDERING ==========
+        function applyFiltersAndRender() {
+            const selections = {}; filterKeys.forEach(k => { selections[k] = filters[k].value; });
+            let filtered = allOrders.filter(o => filterKeys.every(k => checkMatch(o, k, selections[k])));
+            if (selectedShipDates.size > 0) { filtered = filtered.filter(o => selectedShipDates.has(o.fecha_envio)); }
+            if (filters.load.value !== "all") { filtered = filtered.filter(o => o.load === filters.load.value); const seen = new Set(); filtered = filtered.filter(o => { const key = `${o.id_marketer_order}-${o.codigo_producto}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
+            filterKeys.forEach(k => { if (k === 'commercialStatus' || k === 'packingStatus') return; const relevant = allOrders.filter(o => filterKeys.every(fk => fk === k ? true : checkMatch(o, fk, selections[fk]))); populateFilterOptions(k, relevant, selections[k]); });
+            populateShipDateFilter(filtered);
+            renderTable(filtered);
         }
         function checkMatch(order, key, value) {
-            if (value === 'all' || value === 'all_time' || value === null || value === '') return true;
+            if (value === 'all' || value === 'all_time' || !value) return true;
             switch (key) {
                 case 'commercialStatus': return (value === 'open' ? order.estado_marketer_order === 'activa' : order.estado_marketer_order === 'cerrada');
                 case 'packingStatus': return getPackingStatus(order) === value;
                 case 'timeframe':
-                    const now = DateTime.now().startOf('day');
-                    const orderDate = DateTime.fromFormat(order.fecha_envio, dateFormat).startOf('day');
-                    if (!orderDate.isValid) return false;
+                    const now = DateTime.now().startOf('day'), orderDate = DateTime.fromFormat(order.fecha_envio, dateFormat).startOf('day'); if (!orderDate.isValid) return false;
                     switch (value) {
-                        case 'today_past': return orderDate <= now;
-                        case 'through_tomorrow': return orderDate <= now.plus({ days: 1 });
-                        case 'tomorrow': return orderDate.hasSame(now.plus({ days: 1 }), 'day');
-                        case 'this_week': return orderDate.hasSame(now, 'week');
-                        case 'next_week': return orderDate.hasSame(now.plus({ weeks: 1 }), 'week');
-                        default:
-                            if (value.startsWith('20')) { const [year, week] = value.split('-W'); return orderDate.weekYear === parseInt(year) && orderDate.weekNumber === parseInt(week); } return false;
+                        case 'today_past': return orderDate <= now; case 'through_tomorrow': return orderDate <= now.plus({ days: 1 }); case 'tomorrow': return orderDate.hasSame(now.plus({ days: 1 }), 'day'); case 'this_week': return orderDate.hasSame(now, 'week'); case 'next_week': return orderDate.hasSame(now.plus({ weeks: 1 }), 'week');
+                        default: if (value.startsWith('20')) { const [y, w] = value.split('-W'); return orderDate.weekYear === parseInt(y) && orderDate.weekNumber === parseInt(w); } return false;
                     }
-                case 'marketer': return order.marketer === value;
-                case 'packStyle': return order.descripcion === value;
-                case 'label': return order.label === value;
-                case 'productionMethod': return order.formacion === value;
-                case 'orderNumber': return order.order_number === value;
-                case 'load': return value === 'all' ? true : (order.load || '') === value;
+                case 'marketer': return order.marketer === value; case 'packStyle': return order.descripcion === value; case 'label': return order.label === value; case 'productionMethod': return order.formacion === value; case 'orderNumber': return order.order_number === value; case 'load': return value === 'all' ? true : (order.load || '') === value;
                 default: return true;
             }
         }
-        function populateFilterOptions(key, relevantData, selectedValue, filteredTableData) {
-            const selectElement = filters[key];
+        function populateFilterOptions(key, relevantData, selectedValue) {
+            const select = filters[key];
             if (key === 'timeframe') {
-                selectElement.innerHTML = '';
-                const weekOptions = new Map();
-                relevantData.forEach(order => {
-                    const orderDate = DateTime.fromFormat(order.fecha_envio, dateFormat);
-                    if (orderDate.isValid) {
-                        const weekKey = `${orderDate.weekYear}-W${orderDate.weekNumber}`;
-                        if (!weekOptions.has(weekKey)) { const startOfWeek = orderDate.startOf('week'); const endOfWeek = orderDate.endOf('week'); weekOptions.set(weekKey, { label: `Week ${orderDate.weekNumber} (${startOfWeek.toFormat('MMM d')} - ${endOfWeek.toFormat('MMM d')})`, value: weekKey, start: startOfWeek }); }
-                    }
-                });
-                timeframeStaticOptions.forEach(opt => { const optionEl = document.createElement('option'); optionEl.value = opt.value; optionEl.textContent = opt.text; selectElement.appendChild(optionEl); });
-                const sortedWeeks = Array.from(weekOptions.values()).sort((a, b) => a.start - b.start);
-                sortedWeeks.forEach(week => { const optionEl = document.createElement('option'); optionEl.value = week.value; optionEl.textContent = week.label; selectElement.appendChild(optionEl); });
+                const timeframeStaticOptions = [ { value: "all_time", text: "All Time" }, { value: "today_past", text: "Today & Past" }, { value: "through_tomorrow", text: "Through Tomorrow" }, { value: "tomorrow", text: "Tomorrow" }, { value: "this_week", text: "This Week" }, { value: "next_week", text: "Next Week" } ];
+                select.innerHTML = ''; const weekOpts = new Map();
+                relevantData.forEach(o => { const d = DateTime.fromFormat(o.fecha_envio, dateFormat); if (d.isValid) { const k = `${d.weekYear}-W${d.weekNumber}`; if (!weekOpts.has(k)) { const start = d.startOf('week'), end = d.endOf('week'); weekOpts.set(k, { label: `Week ${d.weekNumber} (${start.toFormat('MMM d')} - ${end.toFormat('MMM d')})`, value: k, start }); } } });
+                timeframeStaticOptions.forEach(opt => { const el = document.createElement('option'); el.value = opt.value; el.textContent = opt.text; select.appendChild(el); });
+                Array.from(weekOpts.values()).sort((a,b) => a.start - b.start).forEach(w => { const el = document.createElement('option'); el.value = w.value; el.textContent = w.label; select.appendChild(el); });
             } else if (key === 'load') {
-                selectElement.innerHTML = '<option value="all">All</option>';
-                const loadsInScreen = Array.from(new Set((filteredTableData || relevantData).map(o => o.load || '').filter((v, i, arr) => arr.indexOf(v) === i)));
-                loadsInScreen.filter(l => l).sort(compareLoads).forEach(load => {
-                    const optionEl = document.createElement('option');
-                    optionEl.value = load;
-                    optionEl.textContent = load;
-                    selectElement.appendChild(optionEl);
-                });
-                selectElement.value = selectedValue && loadsInScreen.includes(selectedValue) ? selectedValue : 'all';
+                select.innerHTML = '<option value="all">All</option>';
+                Array.from(new Set(allOrders.map(o => o.load).filter(Boolean))).sort(compareLoads).forEach(load => { const el = document.createElement('option'); el.value = load; el.textContent = load; select.appendChild(el); });
             } else {
-                let dataKey;
-                if (key === 'packStyle') dataKey = 'descripcion'; else if (key === 'productionMethod') dataKey = 'formacion'; else if (key === 'orderNumber') dataKey = 'order_number'; else dataKey = key;
-                const options = [...new Set(relevantData.map(o => o[dataKey]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
-                selectElement.innerHTML = '<option value="all">All</option>';
-                options.forEach(opt => { const optionEl = document.createElement('option'); optionEl.value = opt; optionEl.textContent = opt; selectElement.appendChild(optionEl); });
+                let dataKey; if (key === 'packStyle') dataKey = 'descripcion'; else if (key === 'productionMethod') dataKey = 'formacion'; else if (key === 'orderNumber') dataKey = 'order_number'; else dataKey = key;
+                const opts = [...new Set(relevantData.map(o => o[dataKey]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+                select.innerHTML = '<option value="all">All</option>'; opts.forEach(opt => { const el = document.createElement('option'); el.value = opt; el.textContent = opt; select.appendChild(el); });
             }
-            const currentOptions = Array.from(selectElement.options).map(o => o.value);
-            selectElement.value = currentOptions.includes(selectedValue) ? selectedValue : (key === 'timeframe' ? 'all_time' : 'all');
+            select.value = Array.from(select.options).map(o => o.value).includes(selectedValue) ? selectedValue : (key === 'timeframe' ? 'all_time' : 'all');
         }
         function renderTable(data) {
-            const getSortString = (order) => {
-                const packingStatus = getPackingStatus(order);
-                const isBeingPacked = packingStatus === 'being_packed';
-                const universe = isBeingPacked ? '1' : '2';
-                const line = isBeingPacked ? (lineAssignments[`${order.id_marketer_order}-${order.codigo_producto}`] || 'Z') : 'Z';
-                const priority = priorityAssignments[order.load] || 999;
-                const load = order.load || 'ZZZ';
-                const shipDate = DateTime.fromFormat(order.fecha_envio, dateFormat).toISODate() || '9999-12-31';
-                const marketer = order.marketer || '~';
-                const orderNumber = String(order.order_number || '~').padStart(10, '0');
-                const packStyle = order.descripcion || '~';
-                const label = order.label || '~';
-                const prodMethod = order.formacion || '~';
-                return `${universe}-${line}-${priority.toString().padStart(3, '0')}-${load}-${shipDate}-${marketer}-${orderNumber}-${packStyle}-${label}-${prodMethod}`;
+            const getSortString = o => { 
+                const ps = getPackingStatus(o);
+                const ip = ps === 'being_packed';
+                const u = ip ? '1' : '2';
+                const key = `${o.id_marketer_order}-${o.codigo_producto}`;
+                const l = ip ? (lineAssignments[key]?.[0] || 'Z') : 'Z';
+                const p = priorityAssignments[o.load] || 999;
+                const lo = o.load || 'ZZZ';
+                const sd = DateTime.fromFormat(o.fecha_envio, dateFormat).toISODate() || '9999-12-31';
+                const m = o.marketer || '~';
+                const on = String(o.order_number || '~').padStart(10, '0');
+                return `${u}-${l}-${p.toString().padStart(3, '0')}-${lo}-${sd}-${m}-${on}`;
             };
-            const sortedData = [...data].sort((a, b) => {
-                const sortStringA = getSortString(a);
-                const sortStringB = getSortString(b);
-                return sortStringA.localeCompare(sortStringB);
-            });
-            const finalData = sortedData.filter(order => { const cajasPorPallet = parseFloat(order.cajas_por_pallet) || 0; return cajasPorPallet > 0 && (parseFloat(order.cantidad_solicitada) / cajasPorPallet) > 0; });
+            const sortedData = [...data].sort((a, b) => getSortString(a).localeCompare(getSortString(b)));
+            const finalData = sortedData.filter(o => (parseFloat(o.cajas_por_pallet) || 0) > 0 && (parseFloat(o.cantidad_solicitada) / (parseFloat(o.cajas_por_pallet) || 1)) > 0);
             if (finalData.length === 0) { tableContainer.innerHTML = `<p class="loading">No orders match the current filters.</p>`; return; }
             const totals = { request: 0, assigned: 0, pending: 0, balancePounds: 0, shipped: 0 };
-            finalData.forEach(order => {
-                const cantidadSolicitadaCajas = parseFloat(order.cantidad_solicitada) || 0, cantidadAsignadaCajas = parseFloat(order.cantidad_asignada) || 0, cantidadDespachadaCajas = parseFloat(order.cantidad_despachada) || 0, pesoPorCaja = parseFloat(order.peso_por_caja) || 0, cajasPorPallet = parseFloat(order.cajas_por_pallet) || 0;
-                const requestNum = cajasPorPallet > 0 ? cantidadSolicitadaCajas / cajasPorPallet : 0, assignedNum = cajasPorPallet > 0 ? cantidadAsignadaCajas / cajasPorPallet : 0, shippedNum = cajasPorPallet > 0 ? cantidadDespachadaCajas / cajasPorPallet : 0, pendingNum = requestNum - (assignedNum + shippedNum), balancePounds = (cantidadSolicitadaCajas - (cantidadAsignadaCajas + cantidadDespachadaCajas)) * pesoPorCaja;
-                totals.request += requestNum; totals.assigned += assignedNum; totals.pending += pendingNum; totals.balancePounds += balancePounds; totals.shipped += shippedNum;
-            });
-            const totalsRowHTML = `<tr class="totals-row show-on-desktop"><td colspan="11"></td><td></td><td class="col-price"></td><td class="numeric-cell">${totals.request.toFixed(2)}</td><td class="numeric-cell">${totals.assigned.toFixed(2)}</td><td class="numeric-cell">${totals.pending.toFixed(2)}</td><td class="numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td><td class="numeric-cell"></td><td class="numeric-cell"></td><td class="numeric-cell">${totals.shipped.toFixed(2)}</td><td></td><td class="col-address"></td><td colspan="4"></td></tr>`;
-            const loadOwnership = new Map();
-            finalData.forEach(order => { if (order.estado_marketer_order === 'activa' && order.load && !loadOwnership.has(order.load)) { loadOwnership.set(order.load, order.marketer); } });
-            const allUsedLoads = Array.from(loadOwnership.keys()).sort(compareLoads);
+            finalData.forEach(o => { const reqC = parseFloat(o.cantidad_solicitada) || 0, assC = parseFloat(o.cantidad_asignada) || 0, shipC = parseFloat(o.cantidad_despachada) || 0, pC = parseFloat(o.peso_por_caja) || 0, cxp = parseFloat(o.cajas_por_pallet) || 1; const reqN = reqC / cxp, assN = assC / cxp, shipN = shipC / cxp; totals.request += reqN; totals.assigned += assN; totals.pending += reqN - (assN + shipN); totals.balancePounds += (reqC - (assC + shipC)) * pC; totals.shipped += shipN; });
+            const totalsRowHTML = `<tr class="totals-row show-on-desktop"><td colspan="11"></td><td></td><td class="col-price"></td><td class="numeric-cell">${totals.request.toFixed(2)}</td><td class="numeric-cell">${totals.assigned.toFixed(2)}</td><td class="numeric-cell">${totals.pending.toFixed(2)}</td><td class="numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td><td colspan="2"></td><td class="numeric-cell">${totals.shipped.toFixed(2)}</td><td colspan="6"></td></tr>`;
+            
+            const loadOwnership = new Map(); allOrders.forEach(o => { if (o.estado_marketer_order === 'activa' && o.load && !loadOwnership.has(o.load)) { loadOwnership.set(o.load, o.marketer); } });
+            const allUsedLoads = Array.from(new Set(allOrders.map(o => o.load).filter(Boolean))).sort(compareLoads);
             const highestLoadInUse = allUsedLoads.length > 0 ? allUsedLoads[allUsedLoads.length - 1] : '';
             const nextAvailableGlobalLoad = getNextLoadId(highestLoadInUse);
-            const occupiedLines = new Set(Object.values(lineAssignments));
+            const occupiedLines = new Set(Object.values(lineAssignments).flat());
             const existingPriorities = Object.values(priorityAssignments);
             const maxPriority = existingPriorities.length > 0 ? Math.max(...existingPriorities) : 0;
+            
             let lastProcessedLoad = null, colorIndex = 0, lastOrderNumberForColor = null;
-            const dataRowsHTML = finalData.map(order => {
+            const dataRowsHTML = finalData.map((order, index) => {
                 const isClosed = order.estado_marketer_order === 'cerrada';
-                const commercialStatus = isClosed ? 'CLOSED' : 'OPEN';
-                const statusClass = `status-${commercialStatus.toLowerCase()}`;
                 const packingStatusValue = getPackingStatus(order);
-                let lineCellHTML;
                 const assignmentKey = `${order.id_marketer_order}-${order.codigo_producto}`;
-                const currentLine = lineAssignments[assignmentKey];
-                const isLineEligible = !isClosed && ['pending', 'partially', 'being_packed'].includes(packingStatusValue);
-                const isLineDisabled = !unlockedColumns.line;
-                
-                if(isLineEligible) {
-                    const availableLines = ALL_LINES.filter(l => !occupiedLines.has(l) || l === currentLine);
-                    const firstOption = `<option style="color: #000;" value="">${currentLine ? 'Clear' : '-'}</option>`;
-                    const lineSelectHTML = `<select class="line-select" onchange="handleLineChange('${order.id_marketer_order}', '${order.codigo_producto}', this.value)" ${isLineDisabled ? 'disabled' : ''}>
-                        ${firstOption}
-                        ${availableLines.map(line => `<option style="color: #000;" value="${line}" ${currentLine === line ? 'selected' : ''}>${line}</option>`).join('')}
-                    </select>`;
-                    lineCellHTML = `<td style="padding:0;">${lineSelectHTML}</td>`;
-                } else {
-                    lineCellHTML = `<td style="text-align: center; font-weight: bold;">${currentLine || '-'}</td>`;
+
+                // Cálculos numéricos para la fila
+                const reqC = parseFloat(order.cantidad_solicitada) || 0, assC = parseFloat(order.cantidad_asignada) || 0, shipC = parseFloat(order.cantidad_despachada) || 0, pC = parseFloat(order.peso_por_caja) || 0, cxp = parseFloat(order.cajas_por_pallet) || 1, disp = parseFloat(order.cantidad_disponible) || 0;
+                const reqN = reqC/cxp, assN = assC/cxp, shipN = shipC/cxp, pendN = reqN - (assN+shipN), balP = (reqC - (assC+shipC)) * pC;
+                const availP = !isClosed ? Math.floor(disp / cxp) : 0; const availB = !isClosed ? disp - (availP * cxp) : 0;
+
+                // *** INICIO: LÓGICA DE PARPADEO ***
+                let packingStatusClasses = `status status-${packingStatusValue}`;
+                if (packingStatusValue === 'being_packed') {
+                    const pendingPallets = Math.floor(pendN);
+                    if (pendingPallets === 2) {
+                        packingStatusClasses += ' flash-orange';
+                    } else if (pendingPallets === 1) {
+                        packingStatusClasses += ' flash-red';
+                    }
                 }
+                const packingStatusCellHTML = `<td><span class="${packingStatusClasses}">${packingStatusValue.replace('_', ' ').toUpperCase()}</span></td>`;
+                // *** FIN: LÓGICA DE PARPADEO ***
+
+                let currentLines = lineAssignments[assignmentKey];
+                if (typeof currentLines === 'string') {
+                    currentLines = [currentLines];
+                } else if (!Array.isArray(currentLines)) {
+                    currentLines = [];
+                }
+
+                // LINE CELL LOGIC
+                let lineCellHTML;
+                const isLineEligible = !isClosed && ['pending', 'partially', 'being_packed'].includes(packingStatusValue);
+                if (isLineEligible) {
+                    const lineBtnId = `line-btn-${index}`;
+                    const lineContentId = `line-content-${index}`;
+                    const btnContent = currentLines.length > 0 ? currentLines.join('<br>') : '-';
+                    lineCellHTML = `<td class="multiselect-cell">
+                        <button id="${lineBtnId}" class="multiselect-btn">${btnContent}</button>
+                        <div id="${lineContentId}" class="multiselect-content">
+                        ${ALL_LINES.map(line => {
+                            const isChecked = currentLines.includes(line);
+                            const isOccupied = occupiedLines.has(line) && !isChecked;
+                            const disabledClass = isOccupied ? 'class="disabled"' : '';
+                            return `<label ${disabledClass}><input type="checkbox" value="${line}" ${isChecked ? 'checked' : ''} ${isOccupied || !unlockedColumns.line ? 'disabled' : ''}> ${line}</label>`;
+                        }).join('')}
+                        </div>
+                    </td>`;
+                } else {
+                    lineCellHTML = `<td style="text-align: center; font-weight: bold;">${currentLines.join('<br>') || '-'}</td>`;
+                }
+
+                // PRIORITY & LOAD CELL LOGIC
                 const currentPriority = priorityAssignments[order.load];
                 let loadCellHTML;
-                if (isClosed) {
-                    loadCellHTML = `<td style="text-align: center; font-weight: bold;">-</td>`;
-                } else {
-                    const currentLoad = order.load;
-                    let loadDefinition = null;
-                    if (currentLoad) { if (lastOrderNumberForColor !== order.order_number) { if (lastProcessedLoad !== currentLoad) { colorIndex = 1 - colorIndex; lastProcessedLoad = currentLoad; } lastOrderNumberForColor = order.order_number; } loadDefinition = LOAD_COLORS[colorIndex]; } else { lastOrderNumberForColor = null; }
-                    const marketerSpecificLoads = [];
-                    loadOwnership.forEach((ownerMarketer, load) => { if (ownerMarketer === order.marketer) { marketerSpecificLoads.push(load); } });
-                    const uniqueOptions = [...new Set([...marketerSpecificLoads, nextAvailableGlobalLoad])].sort(compareLoads);
-                    const isLoadSelected = order.load && order.load !== '';
-                    const firstOption = `<option style="color: #000;" value="">${isLoadSelected ? 'Clear' : '-'}</option>`;
-                    const loadBgColor = loadDefinition ? loadDefinition.background : 'transparent';
-                    const loadTextColor = loadDefinition ? loadDefinition.text : '#000000';
+                if (isClosed) { loadCellHTML = `<td style="text-align: center; font-weight: bold;">-</td>`; } else {
+                    let loadDef = null; if (order.load) { if (lastOrderNumberForColor !== order.order_number) { if (lastProcessedLoad !== order.load) { colorIndex = 1 - colorIndex; lastProcessedLoad = order.load; } lastOrderNumberForColor = order.order_number; } loadDef = LOAD_COLORS[colorIndex]; } else { lastOrderNumberForColor = null; }
+                    const marketerLoads = []; loadOwnership.forEach((owner, load) => { if (owner === order.marketer) marketerLoads.push(load); });
+                    const uniqueOpts = [...new Set([...marketerLoads, nextAvailableGlobalLoad])].sort(compareLoads);
                     const isLoadDisabled = !!currentPriority || !unlockedColumns.load;
-                    const loadSelectHTML = `<select class="load-select" style="color: ${loadTextColor}" onchange="handleLoadChange('${order.id_marketer_order}', this.value)" ${isLoadDisabled ? 'disabled' : ''}>${firstOption}${uniqueOptions.map(load => `<option style="color: #000;" value="${load}" ${order.load === load ? 'selected' : ''}>${load}</option>`).join('')}</select>`;
-                    loadCellHTML = `<td style="background-color:${loadBgColor};padding:0;">${loadSelectHTML}</td>`;
+                    const loadSelectHTML = `<select class="load-select" style="color:${loadDef?.text || '#000'}" onchange="handleLoadChange('${order.id_marketer_order}', this.value)" ${isLoadDisabled ? 'disabled' : ''}><option value="">${order.load ? 'Clear' : '-'}</option>${uniqueOpts.map(l => `<option value="${l}" ${order.load === l ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+                    loadCellHTML = `<td style="background-color:${loadDef?.background || 'transparent'};padding:0;">${loadSelectHTML}</td>`;
                 }
                 let priorityCellHTML;
-                const isPriorityDisabled = !unlockedColumns.priority;
                 if (!isClosed && order.load && packingStatusValue !== 'being_packed') {
-                    let optionsHTML = `<option value="">-</option>`;
-                    for(let i = 1; i <= maxPriority + 1; i++) {
-                        const isTaken = existingPriorities.includes(i) && i !== currentPriority;
-                        optionsHTML += `<option value="${i}" ${currentPriority === i ? 'selected' : ''} ${isTaken ? 'disabled style="color: #ccc;"' : ''}>P ${i}${isTaken ? ' (taken)' : ''}</option>`;
-                    }
-                    priorityCellHTML = `<td style="padding:0;"><select class="priority-select" onchange="handlePriorityChange('${order.load}', this.value)" ${isPriorityDisabled ? 'disabled' : ''}>${optionsHTML}</select></td>`;
-                } else {
-                    priorityCellHTML = `<td>${currentPriority ? `P ${currentPriority}` : '-'}</td>`;
-                }
-                const cantidadSolicitadaCajas = parseFloat(order.cantidad_solicitada) || 0, cantidadAsignadaCajas = parseFloat(order.cantidad_asignada) || 0, cantidadDespachadaCajas = parseFloat(order.cantidad_despachada) || 0, pesoPorCaja = parseFloat(order.peso_por_caja) || 0, cajasPorPallet = parseFloat(order.cajas_por_pallet) || 0, cantidadDisponible = parseFloat(order.cantidad_disponible) || 0;
-                const requestNum = cajasPorPallet > 0 ? cantidadSolicitadaCajas / cajasPorPallet : 0, assignedNum = cajasPorPallet > 0 ? cantidadAsignadaCajas / cajasPorPallet : 0, shippedNum = cajasPorPallet > 0 ? cantidadDespachadaCajas / cajasPorPallet : 0, pendingNum = requestNum - (assignedNum + shippedNum), balancePounds = (cantidadSolicitadaCajas - (cantidadAsignadaCajas + cantidadDespachadaCajas)) * pesoPorCaja;
-                const availablePallets = !isClosed ? Math.max(0, cajasPorPallet > 0 ? Math.floor(cantidadDisponible / cajasPorPallet) : 0) : 0;
-                const availableBoxes = !isClosed ? cantidadDisponible - (availablePallets * cajasPorPallet) : 0;
-                let rS = '', aS = '', pS = '', avS = '', sS = '';
-                if ((requestNum > 0 && requestNum.toFixed(2) === assignedNum.toFixed(2)) || (requestNum > 0 && requestNum.toFixed(2) === shippedNum.toFixed(2))) rS = 'style="background-color: #77dd77;"';
-                if (requestNum > 0 && requestNum.toFixed(2) === shippedNum.toFixed(2)) sS = 'style="background-color: #77dd77;"';
-                if (assignedNum > 0) aS = 'style="background-color: #84b6f4;"';
-                if (pendingNum > 0) pS = 'style="background-color: #ff6961;"';
-                if (availablePallets > 0 || availableBoxes > 0) avS = 'style="background-color: #fdfd96;"';
-                const packingStatusText = packingStatusValue.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
-                const packingStatusClass = `status-${packingStatusValue}`;
-                const mapUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent('2460 Wildwood RD Curtis WA 98538')}&destination=${encodeURIComponent(order.direccion_recibidor)}`;
-                const shipDate = DateTime.fromFormat(order.fecha_envio, dateFormat);
-                const hoy = DateTime.now().startOf('day');
+                    let optsHTML = `<option value="">-</option>`;
+                    for(let i=1; i<=maxPriority+1; i++) { const taken = existingPriorities.includes(i) && i !== currentPriority; optsHTML += `<option value="${i}" ${currentPriority === i ? 'selected' : ''} ${taken ? 'disabled style="color:#ccc;"' : ''}>P ${i}${taken ? ' (taken)' : ''}</option>`; }
+                    priorityCellHTML = `<td style="padding:0;"><select class="priority-select" onchange="handlePriorityChange('${order.load}', this.value)" ${!unlockedColumns.priority ? 'disabled' : ''}>${optsHTML}</select></td>`;
+                } else { priorityCellHTML = `<td>${currentPriority ? `P ${currentPriority}` : '-'}</td>`; }
+
+                // OTHER CELLS
+                let rS = '', aS = '', pS = '', avS = '', sS = ''; if ((reqN > 0 && reqN.toFixed(2) === assN.toFixed(2)) || (reqN > 0 && reqN.toFixed(2) === shipN.toFixed(2))) rS = 'style="background-color: #77dd77;"'; if (reqN > 0 && reqN.toFixed(2) === shipN.toFixed(2)) sS = 'style="background-color: #77dd77;"'; if (assN > 0) aS = 'style="background-color: #84b6f4;"'; if (pendN > 0) pS = 'style="background-color: #ff6961;"'; if (availP > 0 || availB > 0) avS = 'style="background-color: #fdfd96;"';
+                const shipDate = DateTime.fromFormat(order.fecha_envio, dateFormat), hoy = DateTime.now().startOf('day');
                 const shipDateCell = `<td${shipDate.isValid && shipDate < hoy ? ' style="background-color:#fdfd96;"' : ''}>${order.fecha_envio}</td>`;
-                let percentCell = '<td></td>';
-                if (requestNum > 0) {
-                    const percent = Math.round(((assignedNum + shippedNum) / requestNum) * 100);
-                    const r = Math.round(255 - (255 * percent / 100));
-                    const color = `rgb(${r},0,0)`;
-                    percentCell = `<td style="font-weight:bold;color:${color};">${percent}%</td>`;
-                }
+                let percentCell = '<td></td>'; if (reqN > 0) { const pct = Math.round(((assN + shipN) / reqN) * 100), r = Math.round(255 - (255 * pct / 100)); percentCell = `<td style="font-weight:bold;color:rgb(${r},0,0);">${pct}%</td>`; }
+                
                 return `<tr>
-                    <td style="text-align:left;"><span class="status ${statusClass}">${commercialStatus}</span></td>
-                    <td style="text-align:left;"><span class="status ${packingStatusClass}">${packingStatusText}</span></td>
+                    <td><span class="status status-${isClosed ? 'closed' : 'open'}">${isClosed ? 'CLOSED' : 'OPEN'}</span></td>
+                    ${packingStatusCellHTML}
                     ${lineCellHTML}
                     ${priorityCellHTML}
                     ${loadCellHTML}
                     ${shipDateCell}
-                    <td style="text-align:left;">${order.marketer}</td>
-                    <td>${order.order_number}</td>
-                    <td style="text-align:left;">${order.descripcion}</td>
-                    <td style="text-align:left;">${order.label || ''}</td>
-                    <td style="text-align:left;">${order.formacion || ''}</td>
+                    <td style="text-align:left;">${order.marketer}</td><td>${order.order_number}</td><td style="text-align:left;">${order.descripcion}</td><td style="text-align:left;">${order.label || ''}</td><td style="text-align:left;">${order.formacion || ''}</td>
                     ${percentCell}
                     <td class="col-price numeric-cell">$${(parseFloat(order.precio) || 0).toFixed(2)}</td>
-                    <td class="numeric-cell" ${rS}>${requestNum.toFixed(2)}</td>
-                    <td class="numeric-cell" ${aS}>${assignedNum.toFixed(2)}</td>
-                    <td class="numeric-cell" ${pS}>${pendingNum.toFixed(2)}</td>
-                    <td class="numeric-cell">${balancePounds.toLocaleString('en-US', { maximumFractionDigits: 0 })}</td>
-                    <td class="numeric-cell" ${avS}>${availablePallets}</td>
-                    <td class="numeric-cell" ${avS}>${availableBoxes}</td>
-                    <td class="numeric-cell" ${sS}>${shippedNum.toFixed(2)}</td>
-                    <td class="col-receiver" style="text-align:left;">${order.recibidor}</td>
-                    <td class="col-address"><a href="${mapUrl}" target="_blank" class="address-link">${order.direccion_recibidor}</a></td>
-                    <td>${order.id_marketer_order}</td>
-                    <td>${order.codigo_producto}</td>
-                    <td class="col-boxes-pallet numeric-cell">${order.cajas_por_pallet}</td>
-                    <td class="col-pound-box numeric-cell">${order.peso_por_caja}</td>
+                    <td class="numeric-cell" ${rS}>${reqN.toFixed(2)}</td><td class="numeric-cell" ${aS}>${assN.toFixed(2)}</td><td class="numeric-cell" ${pS}>${pendN.toFixed(2)}</td><td class="numeric-cell">${balP.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+                    <td class="numeric-cell" ${avS}>${availP}</td><td class="numeric-cell" ${avS}>${availB}</td><td class="numeric-cell" ${sS}>${shipN.toFixed(2)}</td>
+                    <td class="col-receiver" style="text-align:left;">${order.recibidor}</td><td class="col-address"><a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent('2460 Wildwood RD Curtis WA 98538')}&destination=${encodeURIComponent(order.direccion_recibidor)}" target="_blank" class="address-link">${order.direccion_recibidor}</a></td>
+                    <td>${order.id_marketer_order}</td><td>${order.codigo_producto}</td>
+                    <td class="col-boxes-pallet numeric-cell">${order.cajas_por_pallet}</td><td class="col-pound-box numeric-cell">${order.peso_por_caja}</td>
                 </tr>`;
             }).join('');
             tableContainer.innerHTML = `<div class="table-wrapper"><table><thead><tr>
-                <th>COMMERCIAL STATUS</th>
-                <th>PACKING STATUS</th>
-                <th>LINE</th>
-                <th>PRIORITY</th>
-                <th>LOAD</th>
-                <th>SHIP DATE</th>
-                <th>MARKETER</th>
-                <th>ORDER #</th>
-                <th>PACK STYLE</th>
-                <th>LABEL</th>
-                <th>PROD. METHOD</th>
-                <th>%</th>
-                <th class="col-price">PRICE</th>
-                <th>REQUEST</th>
-                <th>ASSIGNED</th>
-                <th>PENDING</th>
-                <th>BALANCE POUNDS</th>
-                <th>AVAIL. PALLETS</th>
-                <th>AVAIL. BOXES</th>
-                <th>SHIPPED</th>
-                <th class="col-receiver">RECEIVER</th>
-                <th class="col-address">ADDRESS</th>
-                <th>ORDER ID</th>
-                <th>STANDARD ID</th>
-                <th class="col-boxes-pallet">BOXES PALLET</th>
-                <th class="col-pound-box">POUND BOX</th>
+                <th>COMMERCIAL STATUS</th><th>PACKING STATUS</th><th>LINE</th><th>PRIORITY</th><th>LOAD</th><th>SHIP DATE</th><th>MARKETER</th><th>ORDER #</th><th>PACK STYLE</th><th>LABEL</th><th>PROD. METHOD</th><th>%</th><th class="col-price">PRICE</th><th>REQUEST</th><th>ASSIGNED</th><th>PENDING</th><th>BALANCE POUNDS</th><th>AVAIL. PALLETS</th><th>AVAIL. BOXES</th><th>SHIPPED</th><th class="col-receiver">RECEIVER</th><th class="col-address">ADDRESS</th><th>ORDER ID</th><th>STANDARD ID</th><th class="col-boxes-pallet">BOXES PALLET</th><th class="col-pound-box">POUND BOX</th>
             </tr></thead><tbody>${totalsRowHTML}${dataRowsHTML}</tbody></table></div>`;
-        }
-        
-        // --- ASIGNACIÓN DE EVENTOS ---
-        document.getElementById('setLineBtn').addEventListener('click', () => handleAuthAction('line'));
-        document.getElementById('setPriorityBtn').addEventListener('click', () => handleAuthAction('priority'));
-        document.getElementById('setLoadBtn').addEventListener('click', () => handleAuthAction('load'));
-        document.getElementById('setAllBtn').addEventListener('click', () => handleAuthAction('all'));
-
-        document.getElementById('togglePriceBtn').addEventListener('click', (e) => { document.body.classList.toggle('show-price'); e.target.textContent = document.body.classList.contains('show-price') ? 'Hide Price' : 'Show Price'; e.target.classList.toggle('active'); });
-        document.getElementById('toggleAddressBtn').addEventListener('click', (e) => { document.body.classList.toggle('show-address'); e.target.textContent = document.body.classList.contains('show-address') ? 'Hide Address' : 'Show Address'; e.target.classList.toggle('active'); });
-        document.getElementById('toggleReceiverBtn').addEventListener('click', (e) => { document.body.classList.toggle('show-receiver'); e.target.textContent = document.body.classList.contains('show-receiver') ? 'Hide Receiver' : 'Show Receiver'; e.target.classList.toggle('active'); });
-        document.getElementById('toggleBoxesPalletBtn').addEventListener('click', (e) => { document.body.classList.toggle('show-boxes-pallet'); e.target.textContent = document.body.classList.contains('show-boxes-pallet') ? 'Hide Boxes Pallet' : 'Show Boxes Pallet'; e.target.classList.toggle('active'); });
-        document.getElementById('togglePoundBoxBtn').addEventListener('click', (e) => { document.body.classList.toggle('show-pound-box'); e.target.textContent = document.body.classList.contains('show-pound-box') ? 'Hide Pound Box' : 'Show Pound Box'; e.target.classList.toggle('active'); });
-        
-        Object.values(filters).forEach(filter => filter.addEventListener('change', applyFiltersAndRender));
-        
-        const shipDateFilterBtn = document.getElementById('shipDateFilterBtn');
-        const shipDateFilterContent = document.getElementById('shipDateFilterContent');
-
-        function populateShipDateFilter(data) {
-            const currentDates = new Set(data.map(order => order.fecha_envio));
-            const sortedDates = Array.from(currentDates).sort((a,b) => DateTime.fromFormat(a, dateFormat) - DateTime.fromFormat(b, dateFormat));
             
-            shipDateFilterContent.innerHTML = '';
-            
-            const allLabel = document.createElement('label');
-            const allCheckbox = document.createElement('input');
-            allCheckbox.type = 'checkbox';
-            allCheckbox.checked = selectedShipDates.size === 0;
-            allCheckbox.onchange = (e) => {
-                if(e.target.checked) {
-                    selectedShipDates.clear();
-                    // Uncheck all other boxes
-                    shipDateFilterContent.querySelectorAll('input').forEach(cb => {
-                        if (cb !== allCheckbox) cb.checked = false;
+            finalData.forEach((order, index) => {
+                const isClosed = order.estado_marketer_order === 'cerrada';
+                const packingStatusValue = getPackingStatus(order);
+                const isLineEligible = !isClosed && ['pending', 'partially', 'being_packed'].includes(packingStatusValue);
+                if (isLineEligible) {
+                    const btn = document.getElementById(`line-btn-${index}`);
+                    const content = document.getElementById(`line-content-${index}`);
+                    btn.addEventListener('click', (e) => {
+                        if (!unlockedColumns.line) return; 
+                        e.stopPropagation();
+                        document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => { if(c !== content) c.style.display = 'none'; });
+                        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+                    });
+                    content.addEventListener('change', () => {
+                        const selectedLines = Array.from(content.querySelectorAll('input:checked')).map(cb => cb.value);
+                        handleLineChange(order.id_marketer_order, order.codigo_producto, selectedLines);
                     });
                 }
-                updateShipDateButtonText();
+            });
+        }
+        
+        // ========== EVENT LISTENERS & INITIALIZATION ==========
+        function setupEventListeners() {
+            document.getElementById('timerBtn').addEventListener('click', () => { if (timerRunning) stopTimer(); else startTimer(); });
+            document.getElementById('updateBtn').addEventListener('click', refreshData);
+            document.getElementById('setLineBtn').addEventListener('click', () => handleAuthAction('line'));
+            document.getElementById('setPriorityBtn').addEventListener('click', () => handleAuthAction('priority'));
+            document.getElementById('setLoadBtn').addEventListener('click', () => handleAuthAction('load'));
+            document.getElementById('setAllBtn').addEventListener('click', () => handleAuthAction('all'));
+            ['Price', 'Address', 'Receiver', 'BoxesPallet', 'PoundBox'].forEach(type => {
+                const btn = document.getElementById(`toggle${type}Btn`);
+                btn.addEventListener('click', (e) => {
+                    document.body.classList.toggle(`show-${type.toLowerCase().replace('boxespallet', 'boxes-pallet').replace('poundbox', 'pound-box')}`);
+                    const newText = type.replace(/([A-Z])/g, ' $1').trim();
+                    e.target.textContent = e.target.textContent.startsWith('Show') ? `Hide ${newText}` : `Show ${newText}`;
+                    e.target.classList.toggle('active');
+                });
+            });
+            Object.values(filters).forEach(filter => filter.addEventListener('change', applyFiltersAndRender));
+            
+            const shipDateBtn = document.getElementById('shipDateFilterBtn');
+            const shipDateContent = document.getElementById('shipDateFilterContent');
+            shipDateBtn.addEventListener('click', (e) => { e.stopPropagation(); shipDateContent.style.display = shipDateContent.style.display === 'block' ? 'none' : 'block'; });
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.multiselect-filter')) shipDateContent.style.display = 'none';
+                if (!e.target.closest('.multiselect-cell')) document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => c.style.display = 'none');
+            });
+
+            document.getElementById('defaultFiltersBtn').addEventListener('click', () => {
+                filters.commercialStatus.value = 'open'; filters.packingStatus.value = 'all'; filters.timeframe.value = 'through_tomorrow';
+                selectedShipDates.clear(); updateShipDateButtonText();
+                Object.keys(filters).forEach(k => { if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(k)) filters[k].value = 'all'; });
                 applyFiltersAndRender();
-            };
-            allLabel.appendChild(allCheckbox);
-            allLabel.appendChild(document.createTextNode(' (Select All)'));
-            shipDateFilterContent.appendChild(allLabel);
-
-            sortedDates.forEach(date => {
-                const label = document.createElement('label');
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.value = date;
-                checkbox.checked = selectedShipDates.has(date);
-                checkbox.onchange = (e) => {
-                    if (e.target.checked) {
-                        selectedShipDates.add(date);
-                    } else {
-                        selectedShipDates.delete(date);
-                    }
-                    shipDateFilterContent.querySelector('input').checked = selectedShipDates.size === 0;
-                    updateShipDateButtonText();
-                    applyFiltersAndRender();
-                };
-                label.appendChild(checkbox);
-                label.appendChild(document.createTextNode(date));
-                shipDateFilterContent.appendChild(label);
             });
         }
-
-        function updateShipDateButtonText() {
-            if (selectedShipDates.size === 0) {
-                shipDateFilterBtn.textContent = 'All';
-            } else if (selectedShipDates.size === 1) {
-                shipDateFilterBtn.textContent = selectedShipDates.values().next().value;
-            } else {
-                shipDateFilterBtn.textContent = `${selectedShipDates.size} dates selected`;
-            }
-        }
-
-        shipDateFilterBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            shipDateFilterContent.style.display = shipDateFilterContent.style.display === 'block' ? 'none' : 'block';
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!shipDateFilterBtn.contains(e.target) && !shipDateFilterContent.contains(e.target)) {
-                shipDateFilterContent.style.display = 'none';
-            }
-        });
-
-        document.getElementById('defaultFiltersBtn').addEventListener('click', () => {
-            filters.commercialStatus.value = 'open';
-            filters.packingStatus.value = 'all';
-            filters.timeframe.value = 'through_tomorrow';
-            selectedShipDates.clear();
-            updateShipDateButtonText();
-            Object.keys(filters).forEach(key => {
-                if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(key)) filters[key].value = 'all';
+        function populateShipDateFilter(data) {
+            const content = document.getElementById('shipDateFilterContent');
+            const dates = Array.from(new Set(data.map(o => o.fecha_envio))).sort((a,b) => DateTime.fromFormat(a, dateFormat) - DateTime.fromFormat(b, dateFormat));
+            content.innerHTML = '';
+            const allLabel = document.createElement('label'); const allCB = document.createElement('input'); allCB.type = 'checkbox'; allCB.checked = selectedShipDates.size === 0;
+            allCB.onchange = (e) => { if(e.target.checked) { selectedShipDates.clear(); content.querySelectorAll('input').forEach(cb => { if (cb !== allCB) cb.checked = false; }); } updateShipDateButtonText(); applyFiltersAndRender(); };
+            allLabel.append(allCB, ' (Select All)'); content.appendChild(allLabel);
+            dates.forEach(date => { const label = document.createElement('label'), cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = date; cb.checked = selectedShipDates.has(date);
+                cb.onchange = (e) => { if (e.target.checked) selectedShipDates.add(date); else selectedShipDates.delete(date); content.querySelector('input').checked = selectedShipDates.size === 0; updateShipDateButtonText(); applyFiltersAndRender(); };
+                label.append(cb, ` ${date}`); content.appendChild(label);
             });
-            applyFiltersAndRender();
-        });
-        function refreshData() {
-            loadAndRenderAll(true);
         }
+        function updateShipDateButtonText() { const btn = document.getElementById('shipDateFilterBtn'); if (selectedShipDates.size === 0) btn.textContent = 'All'; else if (selectedShipDates.size === 1) btn.textContent = selectedShipDates.values().next().value; else btn.textContent = `${selectedShipDates.size} dates selected`; }
+        function refreshData() { loadAndRenderAll(true); }
+        
         function loadAndRenderAll(keepFilters) {
             const prevSelections = keepFilters ? Object.fromEntries(Object.entries(filters).map(([k,v]) => [k,v.value])) : {};
             tableContainer.innerHTML = `<p class="loading">Cargando órdenes...</p>`;
             Promise.all([
-                fetch('/api/orders').then(res => res.ok ? res.json() : Promise.reject('Failed to fetch orders')),
-                fetch('/api/loads').then(res => res.ok ? res.json() : Promise.reject('Failed to fetch loads')),
-                fetch('/api/lines').then(res => res.ok ? res.json() : Promise.reject('Failed to fetch lines')),
-                fetch('/api/priorities').then(res => res.ok ? res.json() : Promise.reject('Failed to fetch priorities'))
-            ])
-            .then(([apiResponse, loadAssignments, initialLines, initialPriorities]) => {
-                const rawOrders = apiResponse[0]?.data;
-                if (!rawOrders) throw new Error("No se encontraron datos de órdenes en la respuesta de la API.");
-                lineAssignments = initialLines;
+                fetch('/api/orders').then(res => res.ok ? res.json() : Promise.reject('Orders')),
+                fetch('/api/loads').then(res => res.ok ? res.json() : Promise.reject('Loads')),
+                fetch('/api/lines').then(res => res.ok ? res.json() : Promise.reject('Lines')),
+                fetch('/api/priorities').then(res => res.ok ? res.json() : Promise.reject('Priorities'))
+            ]).then(([ordersData, loadAssigns, initialLines, initialPriorities]) => {
+                
+                const raw = ordersData[0]?.data;
+                if (!raw || !Array.isArray(raw)) throw new Error("No data in API response.");
+
+                lineAssignments = initialLines; 
                 priorityAssignments = initialPriorities;
-                allOrders = rawOrders.map(order => ({ ...order, load: loadAssignments[order.id_marketer_order] || '' }));
-                let dataWasCleaned = false;
-                const activeLoadsWithPriorities = Object.keys(priorityAssignments);
-                for (const loadId of activeLoadsWithPriorities) {
-                    const ordersInLoad = allOrders.filter(o => o.load === loadId);
-                    if (ordersInLoad.length > 0 && ordersInLoad.every(o => getPackingStatus(o) === 'done')) {
-                        delete priorityAssignments[loadId];
-                        dataWasCleaned = true;
-                    }
-                }
-                Object.keys(lineAssignments).forEach(key => {
-                    const orderInQuestion = allOrders.find(o => `${o.id_marketer_order}-${o.codigo_producto}` === key);
-                    if (!orderInQuestion || getPackingStatus(orderInQuestion) === 'done') {
-                        delete lineAssignments[key];
-                        dataWasCleaned = true;
-                    }
-                });
-                if(dataWasCleaned) {
-                    const finalPriorities = resequencePriorities();
-                    fetch('/api/sync_all', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ lines: lineAssignments, priorities: finalPriorities })
-                    })
-                    .catch(err => console.error("Fallo al sincronizar datos limpios con el servidor:", err));
-                }
+                allOrders = raw.map(o => ({ ...o, load: loadAssigns[o.id_marketer_order] || '' }));
+                let cleaned = false;
+                Object.keys(priorityAssignments).forEach(lId => { const oInLoad = allOrders.filter(o => o.load === lId); if (oInLoad.length > 0 && oInLoad.every(o => getPackingStatus(o) === 'done')) { delete priorityAssignments[lId]; cleaned = true; } });
+                Object.keys(lineAssignments).forEach(key => { const o = allOrders.find(o => `${o.id_marketer_order}-${o.codigo_producto}` === key); if (!o || getPackingStatus(o) === 'done') { delete lineAssignments[key]; cleaned = true; } });
+                if(cleaned) { const finalPrios = resequencePriorities(); handleSaveResponse([ genericSave('/api/sync_all', { lines: lineAssignments, priorities: finalPrios }) ]); }
                 allOrders = allOrders.filter(o => ['cerrada', 'activa'].includes(o.estado_marketer_order) && o.fecha_envio);
-                filterKeys.forEach(key => { if (key !== 'commercialStatus' && key !== 'packingStatus') { populateFilterOptions(key, allOrders, 'all', allOrders); } });
+                filterKeys.forEach(k => { if (k !== 'commercialStatus' && k !== 'packingStatus') { populateFilterOptions(k, allOrders, 'all'); } });
                 filters.commercialStatus.value = keepFilters && prevSelections.commercialStatus ? prevSelections.commercialStatus : 'open';
                 filters.packingStatus.value = keepFilters && prevSelections.packingStatus ? prevSelections.packingStatus : 'all';
                 filters.timeframe.value = keepFilters && prevSelections.timeframe ? prevSelections.timeframe : 'through_tomorrow';
-                Object.keys(filters).forEach(key => {
-                    if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(key)) {
-                        filters[key].value = keepFilters && prevSelections[key] ? prevSelections[key] : 'all';
-                    }
-                });
+                filterKeys.forEach(k => { if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(k)) filters[k].value = keepFilters && prevSelections[k] ? prevSelections[k] : 'all'; });
                 applyFiltersAndRender();
-            })
-            .catch(error => { tableContainer.innerHTML = `<p class="error"><strong>Error Crítico durante la carga inicial:</strong> ${error.toString()}</p>`; console.error("Detalles del error de carga:", error); });
+            }).catch(error => {
+                tableContainer.innerHTML = `<p class="error"><strong>Error Crítico:</strong> ${error.toString()}</p>`;
+                console.error("Error details:", error);
+            });
         }
+        
         document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
             loadAndRenderAll(false);
             updateActionButtonsState();
         });

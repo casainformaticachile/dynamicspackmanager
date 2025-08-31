@@ -120,26 +120,27 @@ app.get('/api/lines', async (req, res) => {
 });
 
 app.post('/api/lines', async (req, res) => {
-    const { assignmentKey, line } = req.body;
+    // Cambiamos "line" por "lines" para que quede claro que esperamos un array
+    const { assignmentKey, lines } = req.body; 
     if (!assignmentKey) {
         return res.status(400).json({ error: 'Falta "assignmentKey" en la petición.' });
     }
     try {
-        const lines = await readJsonFile(LINES_FILE_PATH, {});
-        if (line) {
-            lines[assignmentKey] = line;
+        const allLinesData = await readJsonFile(LINES_FILE_PATH, {});
+        // Si "lines" es un array con contenido, lo guardamos.
+        // Si está vacío o no existe, eliminamos la clave para limpiar.
+        if (lines && Array.isArray(lines) && lines.length > 0) {
+            allLinesData[assignmentKey] = lines;
         } else {
-            delete lines[assignmentKey];
+            delete allLinesData[assignmentKey];
         }
-        await fs.writeFile(LINES_FILE_PATH, JSON.stringify(lines, null, 2));
-        res.status(200).json({ success: true, message: 'Asignación de línea actualizada.' });
+        await fs.writeFile(LINES_FILE_PATH, JSON.stringify(allLinesData, null, 2));
+        res.status(200).json({ success: true, message: 'Asignación de líneas actualizada.' });
     } catch (error) {
         console.error('Error en POST /api/lines:', error);
-        res.status(500).json({ error: 'No se pudo guardar la asignación de línea.' });
+        res.status(500).json({ error: 'No se pudo guardar la asignación de líneas.' });
     }
-});
-
-// --- NUEVAS RUTAS PARA PRIORITIES ---
+});// --- NUEVAS RUTAS PARA PRIORITIES ---
 app.get('/api/priorities', async (req, res) => {
     try {
         const data = await readJsonFile(PRIORITIES_FILE_PATH, {});
