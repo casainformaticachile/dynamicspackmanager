@@ -1,13 +1,19 @@
 {
   "name": "order-program-server",
   "version": "1.0.0",
-  "description": "Server for OrderProgram app",
+  "description": "Servidor para el programa de gestión de órdenes de empaque",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
+  "keywords": [],
+  "author": "casainformaticachile",
+  "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^2.6.7"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.12.0"
   }
 }

@@ -15,7 +15,6 @@
             color: #333;
         }
 
-        /* === INICIO: NUEVAS ANIMACIONES DE PARPADEO === */
         @keyframes blinker-orange {
             50% {
                 background-color: #ff8c00; /* Naranja Neón */
@@ -37,7 +36,6 @@
         .flash-red {
             animation: blinker-red 0.8s linear infinite;
         }
-        /* === FIN: NUEVAS ANIMACIONES DE PARPADEO === */
 
         .container {
             display: flex;
@@ -272,7 +270,7 @@
         .multiselect-cell .multiselect-btn {
             background: transparent;
             border: none;
-            text-align: center;
+            text-align: left;
             font-weight: bold;
         }
         .multiselect-cell .multiselect-content {
@@ -298,17 +296,17 @@
             text-align: center;
             border-bottom: 1px solid #e0e0e0;
             white-space: normal;
-            vertical-align: top;
+            vertical-align: middle; 
         }
         th:nth-child(1), td:nth-child(1) { width: 5%; }
         th:nth-child(2), td:nth-child(2) { width: 6%; }
         th:nth-child(3), td:nth-child(3) { width: 5%; }
         th:nth-child(4), td:nth-child(4) { width: 5%; }
-        th:nth-child(5), td:nth-child(5) { width: 7%; }
+        th:nth-child(5), td:nth-child(5) { width: 4%; }
         th:nth-child(6), td:nth-child(6) { width: 5%; }
         th:nth-child(7), td:nth-child(7) { width: 6%; }
         th:nth-child(8), td:nth-child(8) { width: 8%; }
-        th:nth-child(9), td:nth-child(9) { width: 5%; }
+        th:nth-child(9), td:nth-child(9) { width: 8%; }
         th:nth-child(10), td:nth-child(10) { width: 8%; }
         th:nth-child(11), td:nth-child(11) { width: 6%; }
         th:nth-child(12), td:nth-child(12) { width: 7%; }
@@ -343,15 +341,16 @@
         .loading, .error { padding: 40px 20px; text-align: center; color: #6c757d; font-size: 1.5em; }
         .error { color: #dc3545; font-weight: bold; }
         .numeric-cell { text-align: right; }
-        .totals-row { display: none; }
-        .totals-row.show-on-desktop td {
+        
+        .totals-row td {
             position: sticky;
-            top: 40px;
+            top: 40px; 
             background-color: #e9ecef;
             font-weight: bold;
             z-index: 1;
             font-size: 18px;
         }
+        
         .load-select, .priority-select {
             width: 100%;
             border: none;
@@ -572,9 +571,15 @@
     </div>
     <script>
         // ========== GLOBAL STATE ==========
-        let unlockedColumns = { line: false, priority: false, load: false };
+        let unlockedColumns = { line: false, priority: false, load: false, price: false };
         let timerInterval = null, timerRunning = false, timerSeconds = 0;
-        let allOrders = [], lineAssignments = {}, priorityAssignments = {}, selectedShipDates = new Set();
+        let allOrders = [];
+        let selectedShipDates = new Set();
+        let state = {
+            lines: {},
+            priorities: {},
+            loads: {}
+        };
         const { DateTime } = luxon;
         const dateFormat = 'M/d/yyyy';
         const ALL_LINES = ['LINE 1', 'LINE 2', 'LINE 3', 'LINE 4'];
@@ -595,6 +600,35 @@
         };
         const filterKeys = Object.keys(filters);
 
+        // ========== API HELPERS ==========
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                const response = await fetch(endpoint, options);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Network response was not ok' }));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                }
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    return await response.json();
+                } else {
+                    return { success: true };
+                }
+            } catch (error) {
+                const errorMessage = `Error en API (${method} ${endpoint}): ${error.message}`;
+                console.error(errorMessage, error);
+                alert(errorMessage + "\n\nPor favor, recargue la página. Si el problema persiste, contacte a soporte.");
+                return { success: false, error: errorMessage };
+            }
+        }
+
         // ========== AUTH & LOCKING ==========
         async function handleAuthAction(type) {
             const isCurrentlyUnlocked = (type === 'all') ? (unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load) : unlockedColumns[type];
@@ -605,17 +639,15 @@
             } else {
                 const password = prompt(`Enter password to unlock "${type}":`);
                 if (password === null) return;
-                try {
-                    const response = await fetch('/api/verify-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, password }) });
-                    const result = await response.json();
-                    if (result.success) {
-                        if (type === 'all') { unlockedColumns.line = unlockedColumns.priority = unlockedColumns.load = true; } else { unlockedColumns[type] = true; }
-                        updateActionButtonsState();
-                        applyFiltersAndRender();
-                    } else { alert('Invalid password'); }
-                } catch (error) { console.error('Error during password verification:', error); alert('An error occurred.'); }
+                const result = await apiCall('/api/verify-password', 'POST', { password });
+                if (result.success) {
+                    if (type === 'all') { unlockedColumns.line = unlockedColumns.priority = unlockedColumns.load = true; } else { unlockedColumns[type] = true; }
+                    updateActionButtonsState();
+                    applyFiltersAndRender();
+                } else { alert('Invalid password'); }
             }
         }
+
         function updateActionButtonsState() {
             document.getElementById('setLineBtn').classList.toggle('active', unlockedColumns.line);
             document.getElementById('setLineBtn').textContent = unlockedColumns.line ? 'Block Line' : 'Set Line';
@@ -628,6 +660,29 @@
             document.getElementById('setAllBtn').textContent = allUnlocked ? 'Block All' : 'Set All';
         }
 
+        async function handleToggleAuth(type) {
+            const btn = document.getElementById(`toggle${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
+            const className = `show-${type}`;
+
+            if (unlockedColumns[type]) {
+                document.body.classList.remove(className);
+                btn.classList.remove('active');
+                btn.textContent = `Show ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                unlockedColumns[type] = false;
+            } else {
+                const password = prompt(`Enter password to show ${type}:`);
+                if (password === null) return;
+                const result = await apiCall('/api/verify-price-password', 'POST', { password });
+                if (result.success) {
+                    unlockedColumns[type] = true;
+                    document.body.classList.add(className);
+                    btn.classList.add('active');
+                    btn.textContent = `Hide ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                } else { alert('Invalid password'); }
+            }
+        }
+
+
         // ========== TIMER ==========
         function formatTimer(sec) { if (!sec || sec <= 0) return "-"; let m = Math.floor(sec / 60); let s = sec % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
         function updateTimerDisplay() { document.getElementById('timerDisplay').textContent = formatTimer(timerSeconds); }
@@ -635,90 +690,88 @@
         function startTimer() { if (timerRunning) return; timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; timerRunning = true; document.getElementById('timerBtn').textContent = 'Stop'; document.getElementById('timerBtn').classList.add('timer-stop'); document.getElementById('timerMinutes').disabled = true; updateTimerDisplay(); timerInterval = setInterval(() => { timerSeconds--; updateTimerDisplay(); if (timerSeconds <= 0) { refreshData(); timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; updateTimerDisplay(); } }, 1000); }
 
         // ========== DATA HANDLING & LOGIC ==========
-        function genericSave(endpoint, payload) {
-            return fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-        }
         
-        function handleSaveResponse(promises) {
-            Promise.all(promises)
-            .then(responses => {
-                const failed = responses.filter(r => !r.ok);
-                if (failed.length > 0) {
-                    alert(`Error guardando datos. La página puede estar desincronizada. Por favor, recargue.`);
-                    console.error("Errores de guardado:", failed);
-                }
-            })
-            .catch(error => {
-                alert(`Error de red al guardar. Por favor, recargue.`);
-                console.error("Error de red:", error);
-            });
-        }
-
-        function handleLineChange(orderId, standardId, selectedLines) {
-            const key = `${orderId}-${standardId}`;
-            
+        async function handleLineChange(orderId, standardId, selectedLines) {
+            const assignmentKey = `${orderId}-${standardId}`;
             if (selectedLines && selectedLines.length > 0) {
-                lineAssignments[key] = selectedLines;
+                state.lines[assignmentKey] = selectedLines;
             } else {
-                delete lineAssignments[key];
+                delete state.lines[assignmentKey];
             }
-            applyFiltersAndRender();
-
-            const payloadForServer = { assignmentKey: key, lines: selectedLines || [] };
-            
-            handleSaveResponse([ genericSave('/api/lines', payloadForServer) ]);
+            applyFiltersAndRender(); // Actualización visual inmediata
+            await apiCall('/api/lines', 'POST', { assignmentKey, lines: selectedLines });
         }
 
         function resequencePriorities() { 
-            const sortedLoads = Object.entries(priorityAssignments).sort(([, a], [, b]) => a - b).map(([lId]) => lId);
+            const sortedLoads = Object.entries(state.priorities).sort(([, a], [, b]) => a - b).map(([lId]) => lId);
             const final = {};
             sortedLoads.forEach((lId, i) => { final[lId] = i + 1; });
-            priorityAssignments = final;
+            state.priorities = final;
             return final;
         }
 
-        function handlePriorityChange(loadId, newPriorityStr) {
+        async function handlePriorityChange(loadId, newPriorityStr) {
             const newP = newPriorityStr ? parseInt(newPriorityStr, 10) : null;
-            const oldP = priorityAssignments[loadId];
+            const oldP = state.priorities[loadId];
             if (newP === oldP) return;
 
             if (newP) {
-                for (const lId in priorityAssignments) {
-                    if (priorityAssignments[lId] >= newP) priorityAssignments[lId]++;
+                for (const lId in state.priorities) {
+                    if (state.priorities[lId] >= newP) state.priorities[lId]++;
                 }
-                priorityAssignments[loadId] = newP;
+                state.priorities[loadId] = newP;
             } else {
-                delete priorityAssignments[loadId];
+                delete state.priorities[loadId];
             }
             
             const finalPriorities = resequencePriorities();
-            applyFiltersAndRender();
-            handleSaveResponse([ genericSave('/api/priorities', finalPriorities) ]);
+            applyFiltersAndRender(); // Actualización visual inmediata
+            await apiCall('/api/priorities', 'POST', finalPriorities);
         }
 
-        function handleLoadChange(orderId, newLoad) {
+        async function handleLoadChange(orderId, newLoad) {
             const target = allOrders.find(o => o.id_marketer_order === parseInt(orderId, 10));
-            if (!target || target.load === newLoad) return;
+            if (!target) return;
+
             const siblings = allOrders.filter(o => o.order_number === target.order_number);
             const updates = [];
             siblings.forEach(s => {
-                s.load = newLoad;
-                updates.push({ orderId: s.id_marketer_order, load: newLoad || null });
+                if (newLoad) {
+                    state.loads[s.id_marketer_order] = newLoad;
+                } else {
+                    delete state.loads[s.id_marketer_order];
+                }
+                updates.push({ orderId: s.id_marketer_order, load: newLoad });
             });
-            applyFiltersAndRender();
             
-            handleSaveResponse([ genericSave('/api/loads', { updates }) ]);
+            applyFiltersAndRender(); // Actualización visual inmediata
+            await apiCall('/api/loads', 'POST', { updates });
         }
         
-        function getNextLoadId(id) { if (!id) return 'A'; let carry = true, chars = id.split(''); for (let i = chars.length - 1; i >= 0 && carry; i--) { if (chars[i] === 'Z') { chars[i] = 'A'; carry = true; } else { chars[i] = String.fromCharCode(chars[i].charCodeAt(0) + 1); carry = false; } } if (carry) chars.unshift('A'); return chars.join(''); }
+        function getNextAvailableLoad(usedLoads) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            for (const letter of alphabet) {
+                if (!usedLoads.includes(letter)) {
+                    return letter;
+                }
+            }
+            let next = 'AA';
+            while(usedLoads.includes(next)) {
+                const lastChar = next.slice(-1);
+                if (lastChar < 'Z') {
+                    next = next.slice(0, -1) + String.fromCharCode(lastChar.charCodeAt(0) + 1);
+                } else {
+                    next += 'A';
+                }
+            }
+            return next;
+        }
+
         function compareLoads(a, b) { const la = a || 'ZZZ', lb = b || 'ZZZ'; return la.length !== lb.length ? la.length - lb.length : la.localeCompare(lb); }
+        
         function getPackingStatus(order) { 
             const key = `${order.id_marketer_order}-${order.codigo_producto}`; 
-            const lines = lineAssignments[key]; 
+            const lines = state.lines[key]; 
             if (lines && Array.isArray(lines) && lines.length > 0) return 'being_packed'; 
             const req = (parseFloat(order.cantidad_solicitada) || 0) / (parseFloat(order.cajas_por_pallet) || 1), ass = (parseFloat(order.cantidad_asignada) || 0) / (parseFloat(order.cajas_por_pallet) || 1), ship = (parseFloat(order.cantidad_despachada) || 0) / (parseFloat(order.cajas_por_pallet) || 1); if ((req > 0 && ass >= req) || (req > 0 && req.toFixed(2) === ship.toFixed(2))) return 'done'; if (ass > 0) return 'partially'; return 'pending'; 
         }
@@ -726,10 +779,24 @@
         // ========== FILTERING & RENDERING ==========
         function applyFiltersAndRender() {
             const selections = {}; filterKeys.forEach(k => { selections[k] = filters[k].value; });
-            let filtered = allOrders.filter(o => filterKeys.every(k => checkMatch(o, k, selections[k])));
+            
+            const ordersWithLoad = allOrders.map(o => ({
+                ...o,
+                load: state.loads[o.id_marketer_order] || ''
+            }));
+
+            let filtered = ordersWithLoad.filter(o => filterKeys.every(k => checkMatch(o, k, selections[k])));
+            
             if (selectedShipDates.size > 0) { filtered = filtered.filter(o => selectedShipDates.has(o.fecha_envio)); }
-            if (filters.load.value !== "all") { filtered = filtered.filter(o => o.load === filters.load.value); const seen = new Set(); filtered = filtered.filter(o => { const key = `${o.id_marketer_order}-${o.codigo_producto}`; if (seen.has(key)) return false; seen.add(key); return true; }); }
-            filterKeys.forEach(k => { if (k === 'commercialStatus' || k === 'packingStatus') return; const relevant = allOrders.filter(o => filterKeys.every(fk => fk === k ? true : checkMatch(o, fk, selections[fk]))); populateFilterOptions(k, relevant, selections[k]); });
+            
+            if (filters.load.value !== "all") { 
+                filtered = filtered.filter(o => o.load === filters.load.value); 
+                const seen = new Set(); 
+                filtered = filtered.filter(o => { const key = `${o.id_marketer_order}-${o.codigo_producto}`; if (seen.has(key)) return false; seen.add(key); return true; }); 
+            }
+
+            filterKeys.forEach(k => { if (k === 'commercialStatus' || k === 'packingStatus') return; const relevant = ordersWithLoad.filter(o => filterKeys.every(fk => fk === k ? true : checkMatch(o, fk, selections[fk]))); populateFilterOptions(k, relevant, selections[k]); });
+            
             populateShipDateFilter(filtered);
             renderTable(filtered);
         }
@@ -758,7 +825,7 @@
                 Array.from(weekOpts.values()).sort((a,b) => a.start - b.start).forEach(w => { const el = document.createElement('option'); el.value = w.value; el.textContent = w.label; select.appendChild(el); });
             } else if (key === 'load') {
                 select.innerHTML = '<option value="all">All</option>';
-                Array.from(new Set(allOrders.map(o => o.load).filter(Boolean))).sort(compareLoads).forEach(load => { const el = document.createElement('option'); el.value = load; el.textContent = load; select.appendChild(el); });
+                Array.from(new Set(Object.values(state.loads))).sort(compareLoads).forEach(load => { const el = document.createElement('option'); el.value = load; el.textContent = load; select.appendChild(el); });
             } else {
                 let dataKey; if (key === 'packStyle') dataKey = 'descripcion'; else if (key === 'productionMethod') dataKey = 'formacion'; else if (key === 'orderNumber') dataKey = 'order_number'; else dataKey = key;
                 const opts = [...new Set(relevantData.map(o => o[dataKey]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
@@ -772,8 +839,8 @@
                 const ip = ps === 'being_packed';
                 const u = ip ? '1' : '2';
                 const key = `${o.id_marketer_order}-${o.codigo_producto}`;
-                const l = ip ? (lineAssignments[key]?.[0] || 'Z') : 'Z';
-                const p = priorityAssignments[o.load] || 999;
+                const l = ip ? (state.lines[key]?.[0] || 'Z') : 'Z';
+                const p = state.priorities[o.load] || 999;
                 const lo = o.load || 'ZZZ';
                 const sd = DateTime.fromFormat(o.fecha_envio, dateFormat).toISODate() || '9999-12-31';
                 const m = o.marketer || '~';
@@ -785,14 +852,13 @@
             if (finalData.length === 0) { tableContainer.innerHTML = `<p class="loading">No orders match the current filters.</p>`; return; }
             const totals = { request: 0, assigned: 0, pending: 0, balancePounds: 0, shipped: 0 };
             finalData.forEach(o => { const reqC = parseFloat(o.cantidad_solicitada) || 0, assC = parseFloat(o.cantidad_asignada) || 0, shipC = parseFloat(o.cantidad_despachada) || 0, pC = parseFloat(o.peso_por_caja) || 0, cxp = parseFloat(o.cajas_por_pallet) || 1; const reqN = reqC / cxp, assN = assC / cxp, shipN = shipC / cxp; totals.request += reqN; totals.assigned += assN; totals.pending += reqN - (assN + shipN); totals.balancePounds += (reqC - (assC + shipC)) * pC; totals.shipped += shipN; });
-            const totalsRowHTML = `<tr class="totals-row show-on-desktop"><td colspan="11"></td><td></td><td class="col-price"></td><td class="numeric-cell">${totals.request.toFixed(2)}</td><td class="numeric-cell">${totals.assigned.toFixed(2)}</td><td class="numeric-cell">${totals.pending.toFixed(2)}</td><td class="numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td><td colspan="2"></td><td class="numeric-cell">${totals.shipped.toFixed(2)}</td><td colspan="6"></td></tr>`;
+            const totalsRowHTML = `<tr class="totals-row"><td colspan="12"></td><td class="col-price"></td><td class="numeric-cell">${totals.request.toFixed(2)}</td><td class="numeric-cell">${totals.assigned.toFixed(2)}</td><td class="numeric-cell">${totals.pending.toFixed(2)}</td><td class="numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td><td colspan="2"></td><td class="numeric-cell">${totals.shipped.toFixed(2)}</td><td colspan="6"></td></tr>`;
             
-            const loadOwnership = new Map(); allOrders.forEach(o => { if (o.estado_marketer_order === 'activa' && o.load && !loadOwnership.has(o.load)) { loadOwnership.set(o.load, o.marketer); } });
-            const allUsedLoads = Array.from(new Set(allOrders.map(o => o.load).filter(Boolean))).sort(compareLoads);
-            const highestLoadInUse = allUsedLoads.length > 0 ? allUsedLoads[allUsedLoads.length - 1] : '';
-            const nextAvailableGlobalLoad = getNextLoadId(highestLoadInUse);
-            const occupiedLines = new Set(Object.values(lineAssignments).flat());
-            const existingPriorities = Object.values(priorityAssignments);
+            const loadOwnership = new Map(); allOrders.forEach(o => { const load = state.loads[o.id_marketer_order]; if (o.estado_marketer_order === 'activa' && load && !loadOwnership.has(load)) { loadOwnership.set(load, o.marketer); } });
+            const allUsedLoads = Array.from(new Set(Object.values(state.loads))).sort(compareLoads);
+            const nextAvailableGlobalLoad = getNextAvailableLoad(allUsedLoads);
+            const occupiedLines = new Set(Object.values(state.lines).flat());
+            const existingPriorities = Object.values(state.priorities);
             const maxPriority = existingPriorities.length > 0 ? Math.max(...existingPriorities) : 0;
             
             let lastProcessedLoad = null, colorIndex = 0, lastOrderNumberForColor = null;
@@ -800,33 +866,23 @@
                 const isClosed = order.estado_marketer_order === 'cerrada';
                 const packingStatusValue = getPackingStatus(order);
                 const assignmentKey = `${order.id_marketer_order}-${order.codigo_producto}`;
+                const currentLoad = state.loads[order.id_marketer_order] || '';
 
-                // Cálculos numéricos para la fila
                 const reqC = parseFloat(order.cantidad_solicitada) || 0, assC = parseFloat(order.cantidad_asignada) || 0, shipC = parseFloat(order.cantidad_despachada) || 0, pC = parseFloat(order.peso_por_caja) || 0, cxp = parseFloat(order.cajas_por_pallet) || 1, disp = parseFloat(order.cantidad_disponible) || 0;
+                
                 const reqN = reqC/cxp, assN = assC/cxp, shipN = shipC/cxp, pendN = reqN - (assN+shipN), balP = (reqC - (assC+shipC)) * pC;
                 const availP = !isClosed ? Math.floor(disp / cxp) : 0; const availB = !isClosed ? disp - (availP * cxp) : 0;
 
-                // *** INICIO: LÓGICA DE PARPADEO ***
                 let packingStatusClasses = `status status-${packingStatusValue}`;
                 if (packingStatusValue === 'being_packed') {
                     const pendingPallets = Math.floor(pendN);
-                    if (pendingPallets === 2) {
-                        packingStatusClasses += ' flash-orange';
-                    } else if (pendingPallets === 1) {
-                        packingStatusClasses += ' flash-red';
-                    }
+                    if (pendingPallets === 2) { packingStatusClasses += ' flash-orange'; } else if (pendingPallets === 1) { packingStatusClasses += ' flash-red'; }
                 }
                 const packingStatusCellHTML = `<td><span class="${packingStatusClasses}">${packingStatusValue.replace('_', ' ').toUpperCase()}</span></td>`;
-                // *** FIN: LÓGICA DE PARPADEO ***
 
-                let currentLines = lineAssignments[assignmentKey];
-                if (typeof currentLines === 'string') {
-                    currentLines = [currentLines];
-                } else if (!Array.isArray(currentLines)) {
-                    currentLines = [];
-                }
+                let currentLines = state.lines[assignmentKey];
+                if (typeof currentLines === 'string') { currentLines = [currentLines]; } else if (!Array.isArray(currentLines)) { currentLines = []; }
 
-                // LINE CELL LOGIC
                 let lineCellHTML;
                 const isLineEligible = !isClosed && ['pending', 'partially', 'being_packed'].includes(packingStatusValue);
                 if (isLineEligible) {
@@ -845,28 +901,32 @@
                         </div>
                     </td>`;
                 } else {
-                    lineCellHTML = `<td style="text-align: center; font-weight: bold;">${currentLines.join('<br>') || '-'}</td>`;
+                    lineCellHTML = `<td style="text-align: left; font-weight: bold;">${currentLines.join('<br>') || '-'}</td>`;
                 }
 
-                // PRIORITY & LOAD CELL LOGIC
-                const currentPriority = priorityAssignments[order.load];
+                const currentPriority = state.priorities[currentLoad];
                 let loadCellHTML;
                 if (isClosed) { loadCellHTML = `<td style="text-align: center; font-weight: bold;">-</td>`; } else {
-                    let loadDef = null; if (order.load) { if (lastOrderNumberForColor !== order.order_number) { if (lastProcessedLoad !== order.load) { colorIndex = 1 - colorIndex; lastProcessedLoad = order.load; } lastOrderNumberForColor = order.order_number; } loadDef = LOAD_COLORS[colorIndex]; } else { lastOrderNumberForColor = null; }
+                    let loadDef = null; if (currentLoad) { if (lastOrderNumberForColor !== order.order_number) { if (lastProcessedLoad !== currentLoad) { colorIndex = 1 - colorIndex; lastProcessedLoad = currentLoad; } lastOrderNumberForColor = order.order_number; } loadDef = LOAD_COLORS[colorIndex]; } else { lastOrderNumberForColor = null; }
                     const marketerLoads = []; loadOwnership.forEach((owner, load) => { if (owner === order.marketer) marketerLoads.push(load); });
-                    const uniqueOpts = [...new Set([...marketerLoads, nextAvailableGlobalLoad])].sort(compareLoads);
+                    const uniqueOpts = [...new Set([...marketerLoads, nextAvailableGlobalLoad, currentLoad].filter(Boolean))].sort(compareLoads);
                     const isLoadDisabled = !!currentPriority || !unlockedColumns.load;
-                    const loadSelectHTML = `<select class="load-select" style="color:${loadDef?.text || '#000'}" onchange="handleLoadChange('${order.id_marketer_order}', this.value)" ${isLoadDisabled ? 'disabled' : ''}><option value="">${order.load ? 'Clear' : '-'}</option>${uniqueOpts.map(l => `<option value="${l}" ${order.load === l ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+                    
+                    const loadSelectHTML = `<select class="load-select" style="color:${loadDef?.text || '#000'}" onchange="handleLoadChange('${order.id_marketer_order}', this.value)" ${isLoadDisabled ? 'disabled' : ''}>
+                        <option value="">${currentLoad ? 'Clear' : '-'}</option>
+                        ${uniqueOpts.map(l => `<option value="${l}" ${currentLoad === l ? 'selected' : ''}>${l}</option>`).join('')}
+                    </select>`;
                     loadCellHTML = `<td style="background-color:${loadDef?.background || 'transparent'};padding:0;">${loadSelectHTML}</td>`;
                 }
                 let priorityCellHTML;
-                if (!isClosed && order.load && packingStatusValue !== 'being_packed') {
+                if (!isClosed && currentLoad && packingStatusValue !== 'being_packed') {
                     let optsHTML = `<option value="">-</option>`;
-                    for(let i=1; i<=maxPriority+1; i++) { const taken = existingPriorities.includes(i) && i !== currentPriority; optsHTML += `<option value="${i}" ${currentPriority === i ? 'selected' : ''} ${taken ? 'disabled style="color:#ccc;"' : ''}>P ${i}${taken ? ' (taken)' : ''}</option>`; }
-                    priorityCellHTML = `<td style="padding:0;"><select class="priority-select" onchange="handlePriorityChange('${order.load}', this.value)" ${!unlockedColumns.priority ? 'disabled' : ''}>${optsHTML}</select></td>`;
-                } else { priorityCellHTML = `<td>${currentPriority ? `P ${currentPriority}` : '-'}</td>`; }
+                    for(let i=1; i<=maxPriority+1; i++) { const taken = existingPriorities.includes(i) && i !== currentPriority; optsHTML += `<option value="${i}" ${currentPriority === i ? 'selected' : ''} ${taken ? 'disabled style="color:#ccc;"' : ''}>${i}${taken ? ' (taken)' : ''}</option>`; }
+                    priorityCellHTML = `<td style="padding:0;"><select class="priority-select" onchange="handlePriorityChange('${currentLoad}', this.value)" ${!unlockedColumns.priority ? 'disabled' : ''}>${optsHTML}</select></td>`;
+                } else {
+                    priorityCellHTML = `<td>${currentPriority ? currentPriority : '-'}</td>`;
+                }
 
-                // OTHER CELLS
                 let rS = '', aS = '', pS = '', avS = '', sS = ''; if ((reqN > 0 && reqN.toFixed(2) === assN.toFixed(2)) || (reqN > 0 && reqN.toFixed(2) === shipN.toFixed(2))) rS = 'style="background-color: #77dd77;"'; if (reqN > 0 && reqN.toFixed(2) === shipN.toFixed(2)) sS = 'style="background-color: #77dd77;"'; if (assN > 0) aS = 'style="background-color: #84b6f4;"'; if (pendN > 0) pS = 'style="background-color: #ff6961;"'; if (availP > 0 || availB > 0) avS = 'style="background-color: #fdfd96;"';
                 const shipDate = DateTime.fromFormat(order.fecha_envio, dateFormat), hoy = DateTime.now().startOf('day');
                 const shipDateCell = `<td${shipDate.isValid && shipDate < hoy ? ' style="background-color:#fdfd96;"' : ''}>${order.fecha_envio}</td>`;
@@ -922,15 +982,21 @@
             document.getElementById('setPriorityBtn').addEventListener('click', () => handleAuthAction('priority'));
             document.getElementById('setLoadBtn').addEventListener('click', () => handleAuthAction('load'));
             document.getElementById('setAllBtn').addEventListener('click', () => handleAuthAction('all'));
-            ['Price', 'Address', 'Receiver', 'BoxesPallet', 'PoundBox'].forEach(type => {
+            
+            document.getElementById('togglePriceBtn').addEventListener('click', () => handleToggleAuth('price'));
+
+            ['Address', 'Receiver', 'BoxesPallet', 'PoundBox'].forEach(type => {
                 const btn = document.getElementById(`toggle${type}Btn`);
                 btn.addEventListener('click', (e) => {
-                    document.body.classList.toggle(`show-${type.toLowerCase().replace('boxespallet', 'boxes-pallet').replace('poundbox', 'pound-box')}`);
+                    const typeLower = type.toLowerCase();
+                    const className = `show-${typeLower.replace('boxespallet', 'boxes-pallet').replace('poundbox', 'pound-box')}`;
+                    document.body.classList.toggle(className);
                     const newText = type.replace(/([A-Z])/g, ' $1').trim();
                     e.target.textContent = e.target.textContent.startsWith('Show') ? `Hide ${newText}` : `Show ${newText}`;
                     e.target.classList.toggle('active');
                 });
             });
+
             Object.values(filters).forEach(filter => filter.addEventListener('change', applyFiltersAndRender));
             
             const shipDateBtn = document.getElementById('shipDateFilterBtn');
@@ -944,7 +1010,7 @@
 
             document.getElementById('defaultFiltersBtn').addEventListener('click', () => {
                 filters.commercialStatus.value = 'open'; filters.packingStatus.value = 'all'; filters.timeframe.value = 'through_tomorrow';
-                selectedShipDates.clear(); updateShipDateButtonText();
+                selectedShipDates.clear();
                 Object.keys(filters).forEach(k => { if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(k)) filters[k].value = 'all'; });
                 applyFiltersAndRender();
             });
@@ -960,41 +1026,52 @@
                 cb.onchange = (e) => { if (e.target.checked) selectedShipDates.add(date); else selectedShipDates.delete(date); content.querySelector('input').checked = selectedShipDates.size === 0; updateShipDateButtonText(); applyFiltersAndRender(); };
                 label.append(cb, ` ${date}`); content.appendChild(label);
             });
+            updateShipDateButtonText();
         }
         function updateShipDateButtonText() { const btn = document.getElementById('shipDateFilterBtn'); if (selectedShipDates.size === 0) btn.textContent = 'All'; else if (selectedShipDates.size === 1) btn.textContent = selectedShipDates.values().next().value; else btn.textContent = `${selectedShipDates.size} dates selected`; }
         function refreshData() { loadAndRenderAll(true); }
         
-        function loadAndRenderAll(keepFilters) {
+        async function loadAndRenderAll(keepFilters) {
             const prevSelections = keepFilters ? Object.fromEntries(Object.entries(filters).map(([k,v]) => [k,v.value])) : {};
-            tableContainer.innerHTML = `<p class="loading">Cargando órdenes...</p>`;
-            Promise.all([
-                fetch('/api/orders').then(res => res.ok ? res.json() : Promise.reject('Orders')),
-                fetch('/api/loads').then(res => res.ok ? res.json() : Promise.reject('Loads')),
-                fetch('/api/lines').then(res => res.ok ? res.json() : Promise.reject('Lines')),
-                fetch('/api/priorities').then(res => res.ok ? res.json() : Promise.reject('Priorities'))
-            ]).then(([ordersData, loadAssigns, initialLines, initialPriorities]) => {
-                
-                const raw = ordersData[0]?.data;
-                if (!raw || !Array.isArray(raw)) throw new Error("No data in API response.");
+            tableContainer.innerHTML = `<p class="loading">Cargando datos de órdenes...</p>`;
+            
+            const ordersResponse = await apiCall('/api/orders');
+            if (!ordersResponse || !Array.isArray(ordersResponse[0]?.data)) {
+                tableContainer.innerHTML = `<p class="error">Error: No se pudieron cargar los datos de las órdenes desde la API externa.</p>`;
+                return;
+            }
+            
+            allOrders = ordersResponse[0].data.filter(o => ['cerrada', 'activa'].includes(o.estado_marketer_order) && o.fecha_envio);
+            
+            // 1. Pedir al servidor que haga la reconciliación. Ya no enviamos datos.
+            tableContainer.innerHTML = `<p class="loading">Reconciliando estado con el servidor...</p>`;
+            const reconcileResponse = await apiCall('/api/reconcile', 'POST');
+            if (!reconcileResponse.success) {
+                // El error ya se muestra en el alert de apiCall, aquí solo detenemos el flujo.
+                tableContainer.innerHTML = `<p class="error">Fallo en la reconciliación. Por favor, revise la consola del servidor y recargue.</p>`
+                return;
+            }
 
-                lineAssignments = initialLines; 
-                priorityAssignments = initialPriorities;
-                allOrders = raw.map(o => ({ ...o, load: loadAssigns[o.id_marketer_order] || '' }));
-                let cleaned = false;
-                Object.keys(priorityAssignments).forEach(lId => { const oInLoad = allOrders.filter(o => o.load === lId); if (oInLoad.length > 0 && oInLoad.every(o => getPackingStatus(o) === 'done')) { delete priorityAssignments[lId]; cleaned = true; } });
-                Object.keys(lineAssignments).forEach(key => { const o = allOrders.find(o => `${o.id_marketer_order}-${o.codigo_producto}` === key); if (!o || getPackingStatus(o) === 'done') { delete lineAssignments[key]; cleaned = true; } });
-                if(cleaned) { const finalPrios = resequencePriorities(); handleSaveResponse([ genericSave('/api/sync_all', { lines: lineAssignments, priorities: finalPrios }) ]); }
-                allOrders = allOrders.filter(o => ['cerrada', 'activa'].includes(o.estado_marketer_order) && o.fecha_envio);
-                filterKeys.forEach(k => { if (k !== 'commercialStatus' && k !== 'packingStatus') { populateFilterOptions(k, allOrders, 'all'); } });
-                filters.commercialStatus.value = keepFilters && prevSelections.commercialStatus ? prevSelections.commercialStatus : 'open';
-                filters.packingStatus.value = keepFilters && prevSelections.packingStatus ? prevSelections.packingStatus : 'all';
-                filters.timeframe.value = keepFilters && prevSelections.timeframe ? prevSelections.timeframe : 'through_tomorrow';
-                filterKeys.forEach(k => { if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(k)) filters[k].value = keepFilters && prevSelections[k] ? prevSelections[k] : 'all'; });
-                applyFiltersAndRender();
-            }).catch(error => {
-                tableContainer.innerHTML = `<p class="error"><strong>Error Crítico:</strong> ${error.toString()}</p>`;
-                console.error("Error details:", error);
-            });
+            // 2. Después de limpiar, pedir el estado actualizado y limpio desde el servidor
+            tableContainer.innerHTML = `<p class="loading">Cargando estado actualizado...</p>`;
+            const stateResponse = await apiCall('/api/state');
+            if (!stateResponse || !stateResponse.loads) {
+                 tableContainer.innerHTML = `<p class="error">Error: No se pudo cargar el estado desde la base de datos.</p>`;
+                return;
+            }
+            state = stateResponse;
+
+            // 3. Continuar con la renderización normal
+            filterKeys.forEach(k => { if (k !== 'commercialStatus' && k !== 'packingStatus') { populateFilterOptions(k, allOrders, 'all'); } });
+            if (keepFilters) {
+                Object.keys(prevSelections).forEach(k => { if(filters[k]) filters[k].value = prevSelections[k]; });
+            } else {
+                filters.commercialStatus.value = 'open';
+                filters.packingStatus.value = 'all';
+                filters.timeframe.value = 'through_tomorrow';
+            }
+            
+            applyFiltersAndRender();
         }
         
         document.addEventListener('DOMContentLoaded', () => {
