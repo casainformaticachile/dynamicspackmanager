@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dynamics PackManager - Órdenes Activas</title>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <style>
         html, body {
             height: 100%;
@@ -38,128 +41,68 @@
             animation: blinker-red 0.8s linear infinite;
         }
 
-        /* === INICIO: ESTILOS DEL NUEVO SISTEMA DE PRIORIDAD === */
         .priority-capsule {
             display: inline-flex;
             align-items: center;
-            gap: 6px; /* Espacio ajustado para el icono más pequeño */
-            background-color: #E6E6E6; /* --- FONDO ACTUALIZADO --- */
+            gap: 6px;
+            background-color: #E6E6E6;
             color: #333;
             font-size: 16px;
             font-weight: bold;
             padding: 6px 12px;
             border-radius: 10px;
-            border: 1px solid #cccccc; /* Borde actualizado */
+            border: 1px solid #cccccc;
             min-width: 30px;
             text-align: center;
-            position: relative; /* Para el posicionamiento del select */
+            position: relative;
         }
 
         .priority-icon {
-            width: 15px;  /* --- TAMAÑO REDUCIDO --- */
-            height: 15px; /* --- TAMAÑO REDUCIDO --- */
+            width: 15px;
+            height: 15px;
         }
 
-        /* P1 - Rojo */
-        @-webkit-keyframes flash-icon-red {
-            0%, 100% { fill: #D9534F; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
-        @keyframes flash-icon-red {
-            0%, 100% { fill: #D9534F; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
+        @-webkit-keyframes flash-icon-red { 0%, 100% { fill: #D9534F; } 50% { fill: #E6E6E6; } }
+        @keyframes flash-icon-red { 0%, 100% { fill: #D9534F; } 50% { fill: #E6E6E6; } }
+        @-webkit-keyframes flash-icon-black-medium { 0%, 100% { fill: #000000; } 50% { fill: #E6E6E6; } }
+        @keyframes flash-icon-black-medium { 0%, 100% { fill: #000000; } 50% { fill: #E6E6E6; } }
+        @-webkit-keyframes flash-icon-black-slow { 0%, 100% { fill: #000000; } 50% { fill: #E6E6E6; } }
+        @keyframes flash-icon-black-slow { 0%, 100% { fill: #000000; } 50% { fill: #E6E6E6; } }
 
-        /* P2 - Negro (antes Naranja) */
-        @-webkit-keyframes flash-icon-black-medium {
-            0%, 100% { fill: #000000; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
-        @keyframes flash-icon-black-medium {
-            0%, 100% { fill: #000000; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
+        .priority-icon.p1 { fill: #D9534F; -webkit-animation: flash-icon-red 0.8s linear infinite; animation: flash-icon-red 0.8s linear infinite; }
+        .priority-icon.p2 { fill: #000000; -webkit-animation: flash-icon-black-medium 1.5s linear infinite; animation: flash-icon-black-medium 1.5s linear infinite; }
+        .priority-icon.p3 { fill: #000000; -webkit-animation: flash-icon-black-slow 2.5s linear infinite; animation: flash-icon-black-slow 2.5s linear infinite; }
 
-        /* P3 - Negro (antes Amarillo) */
-        @-webkit-keyframes flash-icon-black-slow {
-            0%, 100% { fill: #000000; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
-        @keyframes flash-icon-black-slow {
-            0%, 100% { fill: #000000; }
-            50% { fill: #E6E6E6; } /* Actualizado al nuevo fondo */
-        }
-
-        .priority-icon.p1 {
-            fill: #D9534F; /* Rojo */
-            -webkit-animation: flash-icon-red 0.8s linear infinite;
-            animation: flash-icon-red 0.8s linear infinite; /* Rápida */
-        }
-        .priority-icon.p2 {
-            fill: #000000; /* Negro */
-            -webkit-animation: flash-icon-black-medium 1.5s linear infinite;
-            animation: flash-icon-black-medium 1.5s linear infinite; /* Media */
-        }
-        .priority-icon.p3 {
-            fill: #000000; /* Negro */
-            -webkit-animation: flash-icon-black-slow 2.5s linear infinite;
-            animation: flash-icon-black-slow 2.5s linear infinite; /* Lenta */
-        }
-        /* === FIN: ESTILOS DEL NUEVO SISTEMA DE PRIORIDAD === */
-
-        .container {
+        .container { display: flex; flex-direction: column; height: 100%; max-width: 1800px; margin: 0 auto; padding: 0 20px; }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-top: 20px; flex-shrink: 0; }
+        
+        .header-main {
             display: flex;
-            flex-direction: column;
-            height: 100%;
-            max-width: 1800px;
-            margin: 0 auto;
-            padding: 0 20px;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
         }
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            margin-top: 20px;
-            flex-shrink: 0; /* Evita que el header se encoja */
+        #app-logo {
+            height: 60px;
+            width: auto;
+            flex-shrink: 0;
         }
-        .header-left {
+        .title-group {
+            flex-grow: 1;
+        }
+        
+        .title-with-toggle {
             display: flex;
             align-items: center;
             gap: 15px;
-            flex-grow: 1;
-            min-width: 360px;
         }
-        h1 {
-            color: #1c2e4a;
-            text-align: left;
-            margin: 0;
-            font-size: 3em;
-        }
-        .subtitle {
-            font-size: 10px;
-            font-style: italic;
-            color: #6c757d;
-            text-align: left;
-            margin: 4px 0 20px 2px;
-        }
+        
+        h1 { color: #1c2e4a; text-align: left; margin: 0; font-size: 3em; }
+        .subtitle { font-size: 10px; font-style: italic; color: #6c757d; text-align: left; margin: 4px 0 20px 2px; }
 
-        /* --- ESTILOS PANEL PLEGABLE --- */
-        #controls-panel {
-            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out, padding-top 0.5s ease-in-out;
-            max-height: 1000px; /* Altura suficiente para el contenido */
-            overflow: hidden;
-            opacity: 1;
-            position: relative;
-            z-index: 10; /* Asegura que los filtros estén sobre la tabla */
-            flex-shrink: 0; /* Evita que el panel se encoja */
-            padding-top: 20px;
-        }
-        body.controls-collapsed #controls-panel {
-            max-height: 0;
-            opacity: 0;
-            padding-top: 0;
-        }
+        #controls-panel { transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out, padding-top 0.5s ease-in-out; max-height: 1000px; overflow: hidden; opacity: 1; position: relative; z-index: 10; flex-shrink: 0; padding-top: 10px; }
+        body.controls-collapsed #controls-panel { max-height: 0; opacity: 0; padding-top: 0; }
+
         #toggle-panel-btn {
             background: #f3f5f7;
             border: 1px solid #ddd;
@@ -170,387 +113,291 @@
             align-items: center;
             justify-content: center;
             transition: background-color 0.2s;
+            flex-shrink: 0;
         }
-        #toggle-panel-btn:hover {
-            background-color: #e9ecef;
-        }
+        #toggle-panel-btn:hover { background-color: #e9ecef; }
         #toggle-panel-btn svg {
             width: 24px;
             height: 24px;
             fill: #444B58;
             transition: transform 0.3s ease-in-out;
         }
-        body.controls-collapsed #toggle-panel-btn svg {
-            transform: rotate(180deg);
-        }
+        body.controls-collapsed #toggle-panel-btn svg { transform: rotate(180deg); }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(-360deg); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        .spinning { animation: spin 1s linear infinite; }
+        
+        .header-actions { display: flex; align-items: center; gap: 15px; margin-top: 12px; }
+        .timer-update-group { display: flex; align-items: stretch; gap: 10px; }
+        .timer-group { display: flex; flex-direction: column; align-items: center; font-size: 13px; color: #444; background: #f3f5f7; padding: 8px 14px; border-radius: 10px; box-shadow: 0 2px 7px rgba(0,0,0,0.05); }
+        .timer-title { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .timer-controls { display: flex; align-items: center; gap: 8px; }
+        .timer-minutes-input { width: 36px; padding: 4px 6px; border-radius: 5px; border: 1px solid #bbb; font-size: 1em; text-align: right; }
+        .timer-btn { background-color: #1c2e4a; color: #fff; border: none; border-radius: 5px; font-size: 1em; padding: 5px 12px; cursor: pointer; font-weight: normal; transition: background 0.2s; }
+        .timer-btn.timer-stop { background: #d9534f; }
+        .timer-btn:active { background: #0056b3; }
+        .timer-display { font-family: monospace; font-size: 1.4em; min-width: 55px; text-align: right; color: #1c2e4a; font-weight: bold; }
+        
+        #updateBtn { background-color: #77dd77; border: 1px solid #6cbf6c; border-radius: 50%; width: 42px; height: 42px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; flex-shrink: 0; }
+        #updateBtn:hover { background-color: #88ee88; }
+        #updateBtn:disabled { background-color: #aaa; cursor: not-allowed; }
+        #updateBtn svg { width: 24px; height: 24px; fill: #fff; }
+        
+        .filter-select { padding: 7px; border-radius: 5px; border: 1px solid #ccc; font-size: 1.1em; font-family: 'Arial Narrow', Arial, sans-serif; background-color: white; min-width: 110px; }
+        
+        .timeframe-control { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .timeframe-control label { font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }
+        .timeframe-control .filter-select { font-size: 16px; padding: 6px 8px; }
+        
+        .header-icon-btn { background: #eee; border: 1px solid #ccc; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; padding: 0; }
+        .header-icon-btn:hover { background-color: #ddd; }
+        .header-icon-btn svg { width: 22px; height: 22px; fill: #444; }
+
+        #printReportBtn { width: 50px; }
+        
+        #defaultFiltersBtn {
+            background: #eee; color: #444; font-weight: normal; border: 1px solid #ccc; border-radius: 5px; cursor: pointer;
+            font-size: 1.1em; line-height: 1.2; padding: 4px 8px; text-align: center;
+            display: flex; align-items: center; justify-content: center; width: 65px;
         }
-        .spinning {
-            animation: spin 1s linear;
+
+        .buttons-bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 12px 16px; margin: 10px 0 18px 0; }
+        .toggle-btn, .action-btn { font-family: 'Arial Narrow', Arial, sans-serif; font-weight: normal; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 1.2em; transition: background-color 0.2s; flex-grow: 1; max-width: 150px; }
+        .toggle-btn { background-color: #485569; }
+        .toggle-btn:hover { filter: brightness(1.2); }
+        .toggle-btn.active { background-color: #799EB3; }
+        .action-btn { background-color: #444B58; color: #FFFFFF; }
+        .action-btn:hover { filter: brightness(1.2); }
+        .action-btn.active { background-color: #647988; }
+        
+        #setScheduleBtn.active { background-color: #647988; }
+
+
+        .multiselect-filter, .multiselect-cell { position: relative; }
+        .multiselect-btn { padding: 7px; border-radius: 5px; border: 1px solid #ccc; font-size: 1.1em; font-family: 'Arial Narrow', Arial, sans-serif; background-color: white; min-width: 110px; cursor: pointer; text-align: left; width: 100%; box-sizing: border-box; white-space: normal; overflow: visible; text-overflow: clip; }
+        .multiselect-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 10; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px; }
+        .multiselect-content label { color: black; padding: 8px 12px; text-decoration: none; display: block; cursor: pointer; }
+        .multiselect-content label:hover { background-color: #f1f1f1; }
+        .multiselect-content input { margin-right: 8px; }
+        .multiselect-content label.disabled { color: #aaa; cursor: not-allowed; text-decoration: line-through; }
+        .multiselect-cell .multiselect-btn { background: transparent; border: none; text-align: left; font-weight: bold; }
+        .multiselect-cell .multiselect-content { left: 50%; transform: translateX(-50%); }
+
+        #outfeed-planning-area-wrapper {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 0;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-block;
         }
-        #updateBtn {
-            background-color: #77dd77;
-            border: 1px solid #6cbf6c;
+        #outfeed-planning-area {
+            display: grid;
+            grid-template-columns: repeat(4, 170px);
+            gap: 0;
+        }
+        .outfeed-column {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #ccc;
+        }
+        .outfeed-column:last-child {
+            border-right: none;
+        }
+        .outfeed-column-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            font-weight: normal;
+            font-size: 12px;
+            color: #1c2e4a;
+            background-color: #e9ecef;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+        }
+        .outfeed-status-toggle {
+            background: none;
+            border: 2px solid #6c757d;
             border-radius: 50%;
-            width: 42px;
-            height: 42px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
+            padding: 0;
+        }
+        .outfeed-status-toggle svg {
+            fill: #6c757d;
+            width: 14px;
+            height: 14px;
+            transition: fill 0.2s;
+        }
+        .outfeed-status-toggle.running { border-color: #28a745; }
+        .outfeed-status-toggle.running svg { fill: #28a745; }
+        .outfeed-queue-list {
+            list-style: none;
+            margin: 0;
+            padding: 8px;
+            flex-grow: 1;
+            min-height: 100px;
             transition: background-color 0.2s;
         }
-        #updateBtn:hover {
-            background-color: #88ee88;
+        .outfeed-queue-list.drag-over {
+            background-color: #d4edda;
         }
-        #updateBtn svg {
-            width: 24px;
-            height: 24px;
-            fill: #fff;
-        }
-
-        /* --- INICIO: SECCIÓN DE CONTROLES DEL HEADER --- */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 12px;
-        }
-        .logo-toggle-control {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            font-size: 10px;
-            font-weight: bold;
-            color: #555;
-            text-transform: uppercase;
-            text-align: center;
-            line-height: 1.1;
-        }
-        .logo-toggle-control input {
-            cursor: pointer;
-            margin-top: 2px;
-        }
-        .timer-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 13px;
-            color: #444;
-            background: #f3f5f7;
-            padding: 8px 14px;
-            border-radius: 10px;
-            box-shadow: 0 2px 7px rgba(0,0,0,0.05);
-        }
-        .timer-title {
+        .queue-tag {
+            background-color: #f8f9fa;
+            color: #333;
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
             font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-        }
-        .timer-controls {
+            font-weight: normal;
+            cursor: grab;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .queue-tag:active { cursor: grabbing; }
+        .queue-tag.running-item {
+            background-color: #ccff00;
+            border-color: #a3cc00;
+            font-weight: bold;
+        }
+        .queue-tag.sortable-ghost {
+            background: #cce5ff;
+            opacity: 0.7;
+        }
+        .queue-tag-position { font-weight: bold; }
+        .queue-tag-id { flex-grow: 1; }
+        .queue-tag-status { font-style: italic; color: #555; }
+
+        .table-container { flex-grow: 1; overflow: hidden; display: flex; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; position: relative; z-index: 1; min-height: 0; }
+        .table-wrapper { width: 100%; overflow: auto; }
+        table { border-spacing: 0; background-color: #ffffff; table-layout: fixed; min-width: 100%; }
+        thead th { position: sticky; top: 0; background-color: #2d2d2d; color: #ffffff; z-index: 2; font-size: 1.1em; padding: 6px 8px; white-space: normal; text-align: center; vertical-align: middle; border-bottom: none; font-weight: normal; text-transform: uppercase; }
+        th, td { padding: 4px 10px; text-align: center; border-bottom: 1px solid #e0e0e0; white-space: normal; vertical-align: middle; }
+        
+        .draggable-handle {
+            display: none;
+            cursor: grab;
+            padding: 2px 6px;
+            margin-left: 5px;
+            font-size: 1.2em;
+        }
+        body.scheduling-mode .draggable-handle {
+            display: inline-block;
+        }
+        .sortable-ghost {
+            opacity: 0.5;
+            background: #c8ebfb;
+        }
+        #table-container.drag-over-trash {
+            border: 3px dashed #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .header-filter-btn {
+            background: none;
+            border: none;
+            color: inherit;
+            font: inherit;
+            text-transform: inherit;
+            padding: 0;
+            margin: 0;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .header-filter-btn:hover { color: #ccff00; }
+        .header-filter-btn.active { color: #ccff00; font-weight: bold; }
+        
+        .th-with-checkbox {
+            display: flex;
+            justify-content: center;
             align-items: center;
             gap: 8px;
         }
-        .timer-minutes-input {
-            width: 36px;
-            padding: 4px 6px;
-            border-radius: 5px;
-            border: 1px solid #bbb;
-            font-size: 1em;
-            text-align: right;
-        }
-        .timer-btn {
-            background-color: #1c2e4a;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            padding: 5px 12px;
+        #showLogosCheckboxHeader {
             cursor: pointer;
-            font-weight: normal; /* Sin negrita */
-            transition: background 0.2s;
-        }
-        .timer-btn.timer-stop {
-            background: #d9534f;
-        }
-        .timer-btn:active { background: #0056b3; }
-        .timer-display {
-            font-family: monospace;
-            font-size: 1.4em;
-            min-width: 55px;
-            text-align: right;
-            color: #1c2e4a;
-            font-weight: bold;
-        }
-        /* --- FIN: SECCIÓN DE CONTROLES DEL HEADER --- */
-        
-        .main-controls-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 20px;
+            vertical-align: middle;
         }
 
-        .controls-container {
-            flex-grow: 1;
-            max-width: 1250px;
-        }
-
-        .filters-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 10px 18px;
-            margin-bottom: 18px;
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
-            min-width: 130px;
-        }
-        .filter-group label {
-            font-size: 1em;
-            font-weight: bold;
-            color: #555;
-            margin-left: 2px;
-            text-transform: uppercase; /* --- FILTRO EN MAYUSCULAS --- */
-        }
-        .filter-select {
-            padding: 7px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 1.1em;
-            font-family: 'Arial Narrow', Arial, sans-serif;
-            background-color: white;
-            min-width: 110px;
-        }
-        .default-filters-btn {
-            background: #eee;
-            color: #444;
-            font-weight: normal; /* Sin negrita */
-            border: none;
-            border-radius: 5px;
-            padding: 8px 18px;
-            font-size: 1.1em;
-            cursor: pointer;
-            margin-right: 8px;
-            border: 1px solid #ccc;
-        }
-        .buttons-bar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            gap: 12px 16px;
-            margin: 6px 0 18px 0;
-        }
-        .toggle-btn, .action-btn {
-            font-family: 'Arial Narrow', Arial, sans-serif;
-            font-weight: normal; /* Sin negrita */
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.2em;
-            transition: background-color 0.2s;
-        }
-        .toggle-btn { background-color: #485569; } /* --- BOTON SHOW --- */
-        .toggle-btn:hover { filter: brightness(1.2); }
-        .toggle-btn.active { background-color: #799EB3; } /* --- BOTON HIDE --- */
-        
-        .action-btn { background-color: #444B58; color: #FFFFFF; } /* --- BOTON SET --- */
-        .action-btn:hover { filter: brightness(1.2); }
-        .action-btn.active { background-color: #647988; } /* --- BOTON BLOCK --- */
-
-        .multiselect-filter, .multiselect-cell {
-            position: relative;
-        }
-        .multiselect-btn {
-            padding: 7px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 1.1em;
-            font-family: 'Arial Narrow', Arial, sans-serif;
-            background-color: white;
-            min-width: 110px;
-            cursor: pointer;
-            text-align: left;
-            width: 100%;
-            box-sizing: border-box;
-            white-space: normal; 
-            overflow: visible;
-            text-overflow: clip;
-        }
-        .multiselect-content {
+        .filter-popup {
             display: none;
             position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 10;
-            max-height: 200px;
-            overflow-y: auto;
+            background-color: #fff;
             border: 1px solid #ccc;
-            border-radius: 5px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1001;
+            width: 250px;
+            font-size: 12px;
         }
-        .multiselect-content label {
-            color: black;
-            padding: 8px 12px;
-            text-decoration: none;
-            display: block;
-            cursor: pointer;
-        }
-        .multiselect-content label:hover {
-            background-color: #f1f1f1;
-        }
-        .multiselect-content input {
-            margin-right: 8px;
-        }
-        .multiselect-content label.disabled {
-            color: #aaa;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-        .multiselect-cell .multiselect-btn {
-            background: transparent;
-            border: none;
-            text-align: left;
-            font-weight: bold;
-        }
-        .multiselect-cell .multiselect-content {
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .table-container { 
-            flex-grow: 1; 
-            overflow: hidden; 
-            display: flex; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
-            margin-bottom: 20px;
-            margin-top: 20px;
-            position: relative; /* Para el contexto de z-index */
-            z-index: 1;
-            min-height: 0; /* CLAVE para que flex-grow funcione con overflow */
-        }
-        .table-wrapper { width: 100%; overflow-y: auto; }
-        table { width: 100%; border-spacing: 0; background-color: #ffffff; table-layout: fixed; }
-        thead th {
-            position: sticky;
-            top: 0;
-            background-color: #2d2d2d; /* --- TITULO COLUMNA --- */
-            color: #ffffff;
-            z-index: 2;
-            font-size: 1.1em;
-            padding: 6px 8px;
-            white-space: normal;
-            text-align: center;
-            vertical-align: middle;
-            border-bottom: none;
-            font-weight: normal;
-            text-transform: uppercase;
-        }
-        th, td {
-            padding: 4px 10px;
-            text-align: center;
-            border-bottom: 1px solid #e0e0e0;
-            white-space: normal;
-            vertical-align: middle; 
-        }
+        .filter-popup-header { padding: 8px; border-bottom: 1px solid #eee; }
+        .filter-popup-search { width: 100%; box-sizing: border-box; padding: 6px; border-radius: 4px; border: 1px solid #ccc; }
+        .filter-popup-body { max-height: 250px; overflow-y: auto; padding: 4px 0; }
+        .filter-popup-body label { display: block; padding: 6px 12px; cursor: pointer; white-space: nowrap; text-align: left; font-weight: normal; color: #333; text-transform: none; }
+        .filter-popup-body label:hover { background-color: #f0f2f5; }
+        .filter-popup-body input { margin-right: 8px; vertical-align: middle; }
+        .filter-popup-footer { padding: 8px; border-top: 1px solid #eee; display: flex; justify-content: space-between; gap: 8px; }
+        .filter-popup-btn { padding: 6px 12px; border-radius: 4px; border: 1px solid #ccc; cursor: pointer; }
+        .btn-apply { background-color: #28a745; color: white; border-color: #28a745; }
+        .btn-clear { background-color: #ffc107; color: black; border-color: #ffc107; }
+        .btn-cancel { background-color: #f8f9fa; }
         
-        /* === ANCHOS DE COLUMNA FINALES === */
-        th:nth-child(1), td:nth-child(1) { width: 4%; }   /* Commercial Status */
-        th:nth-child(2), td:nth-child(2) { width: 3.5%; } /* Packing Status */
-        th:nth-child(3), td:nth-child(3) { width: 3.5%; } /* Outfeed */
-        th:nth-child(4), td:nth-child(4) { width: 3.5%; } /* Priority */
-        th:nth-child(5), td:nth-child(5) { width: 3.5%; } /* Load */
-        th:nth-child(6), td:nth-child(6) { width: 6.0%; } /* Ship Date */
-        th:nth-child(7), td:nth-child(7) { width: 7%; }   /* Marketer */
-        th:nth-child(8), td:nth-child(8) { width: 6%; }   /* Order Number (un poco más ancho) */
-        th:nth-child(9), td:nth-child(9) { width: 7%; }   /* Pack Style */
-        th:nth-child(10), td:nth-child(10) { width: 7%; } /* Label */
-        th:nth-child(11), td:nth-child(11) { width: 6.5%; } /* Production Method */
-        th:nth-child(12), td:nth-child(12) { width: 4%; } /* % */
-        th:nth-child(13), td:nth-child(13) { width: 4%; } /* Request */
-        th:nth-child(14), td:nth-child(14) { width: 4%; } /* Assigned */
-        th:nth-child(15), td:nth-child(15) { width: 4%; } /* Pending */
-        th:nth-child(16), td:nth-child(16) { width: 4.5%; } /* Balance Pound */
-        th:nth-child(17), td:nth-child(17) { width: 4%; } /* Available Pallets */
-        th:nth-child(18), td:nth-child(18) { width: 4%; } /* Available Boxes */
-        th:nth-child(19), td:nth-child(19) { width: 4%; } /* Shipped */
-        .col-price, .col-receiver, .col-address, .col-boxes-pallet, .col-pound-box { width: 5%; }
+        th:nth-child(1), td:nth-child(1) { width: 4%; }
+        th:nth-child(2), td:nth-child(2) { width: 3.5%; }
+        th:nth-child(3), td:nth-child(3) { width: 8%; }
+        th:nth-child(4), td:nth-child(4) { width: 3.5%; }
+        th:nth-child(5), td:nth-child(5) { width: 6.0%; }
+        th:nth-child(6), td:nth-child(6) { width: 6.0%; }
+        th:nth-child(7), td:nth-child(7) { width: 7%; }
+        th:nth-child(8), td:nth-child(8) { width: 6%; }
+        th:nth-child(9), td:nth-child(9) { width: 7%; }
+        th:nth-child(10), td:nth-child(10) { width: 7%; }
+        th:nth-child(11), td:nth-child(11) { width: 6.5%; }
+        th.col-price, td.col-price { width: 5%; }
+        th:nth-child(13), td:nth-child(13) { width: 4%; }
+        th:nth-child(14), td:nth-child(14) { width: 4%; }
+        th:nth-child(15), td:nth-child(15) { width: 4%; }
+        th.col-balance-pound, td.col-balance-pound { width: 4%; }
+        th:nth-child(17), td:nth-child(17) { width: 4.5%; }
+        th:nth-child(18), td:nth-child(18) { width: 4%; }
+        th:nth-child(19), td:nth-child(19) { width: 4%; }
+        th:nth-child(20), td:nth-child(20) { width: 4%; }
+        .col-receiver, .col-address, .col-boxes-pallet, .col-pound-box { width: 5%; }
 
         tbody tr:hover { background-color: #e9ecef; }
         
-        .status {
-            font-weight: normal;
-            padding: 5px 10px;
-            border-radius: 10px;
-            display: inline-block;
-            text-align: center;
-            min-width: 30px;
-            text-transform: uppercase;
-        }
-        .cell-tag {
-            font-weight: normal;
-            padding: 5px 10px;
-            border-radius: 10px;
-            display: inline-block;
-            text-align: center;
-            min-width: 30px;
-            font-size: 16px;
-        }
-        
-        .numeric-value {
-            font-size: 14px;
-            font-weight: normal;
-        }
-        .numeric-value.pending {
-            font-weight: bold;
-        }
-        .order-id-subtext {
-            font-weight: normal;
-        }
-        
-        .numeric-capsule {
-            font-weight: normal;
-            padding: 3px 8px;
-            border-radius: 8px;
-            display: inline-block;
-            text-align: center;
-            min-width: 35px;
-            font-size: 13px;
-            color: #333;
-            background-color: #fdfd96;
-            border: 1px solid #fdfd96;
-        }
+        .status { font-weight: normal; padding: 5px 10px; border-radius: 10px; display: inline-block; text-align: center; min-width: 30px; text-transform: uppercase; }
+        .cell-tag { font-weight: normal; padding: 5px 10px; border-radius: 10px; display: inline-block; text-align: center; min-width: 30px; font-size: 16px; }
+        .numeric-value { font-size: 14px; font-weight: normal; }
+        .numeric-value.pending { font-weight: bold; }
+        .order-id-subtext { font-weight: normal; }
+        .numeric-capsule { font-weight: normal; padding: 3px 8px; border-radius: 8px; display: inline-block; text-align: center; min-width: 35px; font-size: 13px; color: #333; background-color: #fdfd96; border: 1px solid #fdfd96; }
 
         .status-closed { background-color: #6c757d; color: white; } 
         .status-open { background-color: #28a745; color: white; }
         .status-being_packed { background-color: #ccff00; color: #000; }
-        
         .status-pending { background-color: #ff6961; color: white; }
         .status-partially { background-color: #fdfd96; color: #333; }
         .status-done { background-color: #77dd77; color: #333; }
         .status-shipped { background-color: #84b6f4; color: white; }
 
-        .client-logo {
-            max-height: 34px;
-            max-width: 200px;
-            vertical-align: middle;
-        }
-        .pack-style-id {
-            font-weight: bold;
-        }
+        .client-logo { max-height: 34px; max-width: 200px; vertical-align: middle; }
+        .pack-style-id { font-weight: bold; }
 
         .progress-donut { transform: rotate(-90deg); }
         .progress-donut-bg { fill: none; stroke: #e9ecef; }
@@ -561,97 +408,68 @@
         .progress-donut-fg.light-green { stroke: #28a745; }
         .progress-donut-fg.dark-green { stroke: #198754; }
         
-        .date-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 14px;
-            font-weight: normal;
-            color: #333;
-            width: 110px;
-        }
-        .date-indicator .symbol {
-            font-size: 1.4em;
-            line-height: 1;
-            color: #555;
-            font-weight: bold; /* --- FLECHAS EN NEGRITA --- */
-        }
+        .date-indicator { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: normal; color: #333; width: 110px; }
+        .date-indicator .symbol { font-size: 1.4em; line-height: 1; color: #555; font-weight: bold; }
 
         .col-price, .col-address, .col-receiver, .col-boxes-pallet, .col-pound-box,
-        th.col-availability, td.col-availability { 
-            display: none; 
-        }
+        th.col-availability, td.col-availability, .col-balance-pound { display: none; }
         body.show-price .col-price { display: table-cell; }
         body.show-address .col-address { display: table-cell; }
         body.show-receiver .col-receiver { display: table-cell; }
         body.show-boxes-pallet .col-boxes-pallet { display: table-cell; }
         body.show-pound-box .col-pound-box { display: table-cell; }
-        body.show-availability .col-availability {
-            display: table-cell;
-        }
+        body.show-availability .col-availability { display: table-cell; }
+        body.show-balance-pound .col-balance-pound { display: table-cell; }
 
         .address-link { color: #007bff; text-decoration: none; }
         .address-link:hover { text-decoration: underline; }
-        .loading, .error { padding: 40px 20px; text-align: center; color: #6c757d; font-size: 1.5em; }
+        .loading, .error, .placeholder { padding: 40px 20px; text-align: center; color: #6c757d; font-size: 1.5em; }
         .error { color: #dc3545; font-weight: bold; }
         .numeric-cell { text-align: right; }
         
-        .totals-row td {
-            position: sticky;
-            top: 40px; 
-            background-color: #e9ecef;
-            font-weight: normal;
-            z-index: 1;
-            font-size: 16px;
-        }
+        .totals-row td { position: sticky; top: 40px; background-color: #e9ecef; font-weight: normal; z-index: 1; font-size: 16px; }
         
-        .load-select, .priority-select {
-            width: 100%;
-            border: none;
-            background: transparent;
-            font-weight: normal;
-            font-size: 16px;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            padding: 0 5px;
-            cursor: pointer;
-            text-align: center;
-            text-align-last: center;
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            opacity: 0; /* Oculta el select, pero es funcional */
-        }
-        .tag-select-wrapper {
-            position: relative;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        
+        .load-select, .priority-select { width: 100%; border: none; background: transparent; font-weight: normal; font-size: 16px; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 0 5px; cursor: pointer; text-align: center; text-align-last: center; position: absolute; top: 0; left: 0; height: 100%; opacity: 0; }
+        .tag-select-wrapper { position: relative; display: inline-block; vertical-align: middle; }
         .load-select option, .priority-select option { color: #000; background: #fff; }
         select:disabled { cursor: not-allowed; }
 
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); width: 320px; text-align: center; }
+        .modal-content h3 { margin-top: 0; color: #1c2e4a; font-size: 1.5em; }
+        .modal-content p { margin: 15px 0; color: #555; font-size: 1.1em; }
+        .modal-input { width: calc(100% - 20px); padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 5px; font-size: 1.2em; }
+        .modal-buttons { display: flex; justify-content: space-between; gap: 15px; }
+        .modal-buttons button { flex-grow: 1; padding: 10px; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; transition: background-color 0.2s; }
+        #modal-submit-btn, #confirmPrintBtn { background-color: #28a745; color: white; }
+        #modal-submit-btn:hover, #confirmPrintBtn:hover { background-color: #218838; }
+        #modal-cancel-btn, #cancelPrintBtn { background-color: #6c757d; color: white; }
+        #modal-cancel-btn:hover, #cancelPrintBtn:hover { background-color: #5a6268; }
+        
+        .print-modal-field { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; text-align: left; }
+        .print-modal-field label { margin-bottom: 5px; font-weight: bold; font-size: 1.1em; }
+        .print-modal-field select, .print-modal-field input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 5px; font-size: 1.1em; box-sizing: border-box; }
+        .print-modal-field.checkbox-field { flex-direction: row; align-items: center; gap: 10px; }
+        .print-modal-field.checkbox-field input { width: auto; }
+
         @media (max-width: 768px) {
+            #table-container table, #table-container thead, #table-container tbody, #table-container th, #table-container td, #table-container tr { display: block; }
+            #table-container thead tr { position: absolute; top: -9999px; left: -9999px; }
+            #table-container .totals-row { display: none !important; }
+            #table-container tr { border: 1px solid #ccc; margin-bottom: 15px; border-radius: 8px; background-color: #fff; }
+            #table-container td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; white-space: normal; width: 100% !important; box-sizing: border-box; }
+            #table-container td:before { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; content: attr(data-label); }
             html, body { overflow: auto; }
             .container { padding: 0 10px; height: auto; }
             h1 { font-size: 2em; }
             .subtitle { margin-bottom: 15px; }
-            .main-controls-wrapper, .filters-bar, .buttons-bar, .header-row { flex-direction: column; align-items: stretch; gap: 12px; }
+            .main-controls-wrapper, .buttons-bar, .header-row { flex-direction: column; align-items: stretch; gap: 12px; }
             .controls-container { max-width: 100%; }
             .header-actions { justify-content: center; flex-wrap: wrap; }
             .timer-group { align-items: center; width: 100%; box-sizing: border-box;}
-            .filter-group, .default-filters-btn, .toggle-btn, .action-btn { width: 100%; }
+            .default-filters-btn, .toggle-btn, .action-btn { width: 100%; }
             .filter-select, .multiselect-btn { width: 100%; box-sizing: border-box; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; }
-            .totals-row { display: none !important; }
-            tr { border: 1px solid #ccc; margin-bottom: 15px; border-radius: 8px; background-color: #fff; }
-            td { border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right; white-space: normal; width: 100% !important; box-sizing: border-box; }
-            td:before { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; content: attr(data-label); }
-            body.show-price .col-price, body.show-address .col-address, body.show-receiver .col-receiver, body.show-boxes-pallet .col-boxes-pallet, body.show-pound-box .col-pound-box { display: block; }
+            body.show-price .col-price, body.show-address .col-address, body.show-receiver .col-receiver, body.show-boxes-pallet .col-boxes-pallet, body.show-pound-box .col-pound-box, body.show-balance-pound .col-balance-pound { display: block; }
             body.show-availability td[data-label="AVAILABLE PALLETS"], body.show-availability td[data-label="AVAILABLE BOXES"] { display: block; }
         }
     </style>
@@ -659,237 +477,282 @@
 <body class="">
     <div class="container">
         <div class="header-row">
-            <div class="header-left">
-                <button id="toggle-panel-btn" title="Toggle Controls Panel">
-                    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM4 6h9v12H4V6zm11 12V6h5v12h-5z"/></svg>
-                </button>
-                <div>
-                    <h1>DYNAMICS PACKMANAGER</h1>
+            <div class="header-main">
+                <img src="/logos/mainlogo.png" alt="Company Logo" id="app-logo">
+                <div class="title-group">
+                    <div class="title-with-toggle">
+                        <h1>DYNAMICS PACKMANAGER</h1>
+                        <button id="toggle-panel-btn" title="Toggle Controls Panel">
+                            <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/></svg>
+                        </button>
+                    </div>
                     <p class="subtitle">Design & Development by Mentes Inquietas 2025</p>
                 </div>
             </div>
             <div class="header-actions">
-                <div class="logo-toggle-control">
-                    <span>Show<br>Logos</span>
-                    <input type="checkbox" id="showLogosCheckbox" checked>
+                <div class="timeframe-control">
+                    <label for="timeframeFilter">Timeframe</label>
+                    <select id="timeframeFilter" class="filter-select"></select>
                 </div>
-                <button id="updateBtn" title="Refresh Data">
-                    <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-                </button>
-                <div class="timer-group" id="timerGroup">
-                    <div class="timer-title">Auto refresh</div>
-                    <div class="timer-controls">
-                        <input type="number" min="1" max="120" id="timerMinutes" class="timer-minutes-input" value="5">
-                        <span>min</span>
-                        <button id="timerBtn" class="timer-btn">Play</button>
-                        <div class="timer-display" id="timerDisplay">-</div>
+                <div class="timer-update-group">
+                    <div class="timer-group" id="timerGroup">
+                        <div class="timer-title">Auto refresh</div>
+                        <div class="timer-controls">
+                            <input type="number" min="1" max="120" id="timerMinutes" class="timer-minutes-input" value="5">
+                            <span>min</span>
+                            <button id="timerBtn" class="timer-btn">Play</button>
+                            <div class="timer-display" id="timerDisplay">-</div>
+                        </div>
                     </div>
+                    <button id="printReportBtn" class="header-icon-btn" title="Print Report">
+                        <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+                    </button>
+                    <button id="defaultFiltersBtn" title="Default Filters">Default<br>Filters</button>
+                    <button id="updateBtn" title="Refresh Data">
+                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    </button>
                 </div>
             </div>
         </div>
         
         <div id="controls-panel">
-            <div class="main-controls-wrapper">
-                <div class="controls-container">
-                    <div class="filters-bar">
-                        <button id="defaultFiltersBtn" class="default-filters-btn">Default Filters</button>
-                        <div class="filter-group">
-                            <label for="commercialStatusFilter">Commercial Status</label>
-                            <select id="commercialStatusFilter" class="filter-select">
-                                <option value="all">All</option>
-                                <option value="open" selected>Open</option>
-                                <option value="closed">Closed</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="packingStatusFilter">Packing Status</label>
-                            <select id="packingStatusFilter" class="filter-select">
-                                <option value="all" selected>All</option>
-                                <option value="pending">Pending</option>
-                                <option value="being_packed">Being Packed</option>
-                                <option value="partially">Partially</option>
-                                <option value="done">Done</option>
-                                <option value="shipped">Shipped</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="loadFilter">Load</label>
-                            <select id="loadFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label>Ship Date</label>
-                            <div class="multiselect-filter">
-                                <button id="shipDateFilterBtn" class="multiselect-btn">All</button>
-                                <div id="shipDateFilterContent" class="multiselect-content"></div>
-                            </div>
-                        </div>
-                        <div class="filter-group">
-                            <label for="timeframeFilter">Timeframe</label>
-                            <select id="timeframeFilter" class="filter-select"></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="marketerFilter">Marketer</label>
-                            <select id="marketerFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="orderNumberFilter">Order Number</label>
-                            <select id="orderNumberFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="packStyleFilter">Pack Style</label>
-                            <select id="packStyleFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="labelFilter">Label</label>
-                            <select id="labelFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="productionMethodFilter">Production Method</label>
-                            <select id="productionMethodFilter" class="filter-select"><option value="all">All</option></select>
-                        </div>
-                    </div>
-                    <div class="buttons-bar">
-                        <button id="setLineBtn" class="action-btn">Set Outfeed</button>
-                        <button id="setPriorityBtn" class="action-btn">Set Priority</button>
-                        <button id="setLoadBtn" class="action-btn">Set Load</button>
-                        <button id="setAllBtn" class="action-btn">Set All</button>
-                        <button id="togglePriceBtn" class="toggle-btn">Show Price</button>
-                        <button id="toggleAddressBtn" class="toggle-btn">Show Address</button>
-                        <button id="toggleReceiverBtn" class="toggle-btn">Show Receiver</button>
-                        <button id="toggleAvailabilityBtn" class="toggle-btn">Show Availability</button>
-                        <button id="toggleBoxesPalletBtn" class="toggle-btn">Show Boxes/Pallet</button>
-                        <button id="togglePoundBoxBtn" class="toggle-btn">Show Lbs/Box</button>
-                    </div>
-                </div>
-                <div class="info-panel-placeholder">
+            <div id="outfeed-planning-area-wrapper">
+                <div id="outfeed-planning-area">
+                    <!-- Las columnas de destino para el Drag & Drop se generarán aquí -->
                 </div>
             </div>
         </div>
 
+        <div class="buttons-bar">
+            <button id="setScheduleBtn" class="action-btn">Set Schedule</button>
+            <button id="setOutfeedBtn" class="action-btn">Set Outfeed</button>
+            <button id="setPriorityBtn" class="action-btn">Set Priority</button>
+            <button id="setLoadBtn" class="action-btn">Set Load</button>
+            <button id="setAllBtn" class="action-btn">Set All</button>
+            <button id="togglePriceBtn" class="toggle-btn">Show Price</button>
+            <button id="toggleAddressBtn" class="toggle-btn">Show Address</button>
+            <button id="toggleReceiverBtn" class="toggle-btn">Show Receiver</button>
+            <button id="toggleAvailabilityBtn" class="toggle-btn">Show Availability</button>
+            <button id="toggleBoxesPalletBtn" class="toggle-btn">Show Boxes/Pallet</button>
+            <button id="togglePoundBoxBtn" class="toggle-btn">Show Lbs/Box</button>
+            <button id="toggleBalancePoundBtn" class="toggle-btn">Show Balance Pound</button>
+        </div>
+
         <div id="table-container" class="table-container"><p class="loading">Cargando órdenes...</p></div>
     </div>
+
+    <!-- INICIO: MODAL DE CONTRASEÑA -->
+    <div id="password-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Authentication Required</h3>
+            <p id="modal-message">Enter password to proceed</p>
+            <input type="password" id="modal-password-input" class="modal-input">
+            <div class="modal-buttons">
+                <button id="modal-cancel-btn">Cancel</button>
+                <button id="modal-submit-btn">Submit</button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN: MODAL DE CONTRASEÑA -->
+
+    <!-- INICIO: MODAL DE IMPRESIÓN -->
+    <div id="print-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Opciones de Reporte</h3>
+            <div class="print-modal-field">
+                <label for="reportTypeSelect">Tipo de Reporte</label>
+                <select id="reportTypeSelect">
+                    <option value="packingSchedule">Packing Schedule</option>
+                </select>
+            </div>
+            <div class="print-modal-field">
+                <label for="reportPeriodSelect">Período</label>
+                <select id="reportPeriodSelect"></select>
+            </div>
+            <div class="print-modal-field checkbox-field">
+                <input type="checkbox" id="designedReportCheckbox" checked>
+                <label for="designedReportCheckbox">Designed Report</label>
+            </div>
+            <div class="modal-buttons">
+                <button id="cancelPrintBtn">Cancel</button>
+                <button id="confirmPrintBtn">Print</button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN: MODAL DE IMPRESIÓN -->
+
+    <!-- INICIO: POP-UP DE FILTRO GENÉRICO -->
+    <div id="filter-popup" class="filter-popup">
+        <div class="filter-popup-header">
+            <input type="text" id="filter-popup-search" class="filter-popup-search" placeholder="Search...">
+        </div>
+        <div id="filter-popup-body" class="filter-popup-body">
+            <!-- Checkboxes se insertarán aquí dinámicamente -->
+        </div>
+        <div class="filter-popup-footer">
+            <div style="flex-grow: 1; text-align: left;">
+                <button id="filter-popup-clear" class="filter-popup-btn btn-clear">Clear</button>
+            </div>
+            <button id="filter-popup-cancel" class="filter-popup-btn btn-cancel">Cancel</button>
+            <button id="filter-popup-apply" class="filter-popup-btn btn-apply">Apply</button>
+        </div>
+    </div>
+    <!-- FIN: POP-UP DE FILTRO -->
+
+
     <script>
         // ========== GLOBAL STATE ==========
-        let unlockedColumns = { line: false, priority: false, load: false, price: false };
+        let unlockedColumns = { outfeed: false, priority: false, load: false, schedule: false, price: false };
+        let isSchedulingMode = false;
         let timerInterval = null, timerRunning = false, timerSeconds = 0;
         let allOrders = [];
+        let allOutfeeds = [];
         let logoMap = {};
         let showLogos = true;
-        let selectedShipDates = new Set();
         let state = {
-            lines: {},
             priorities: {},
-            loads: {}
+            loads: {},
+            planningState: {
+                queues: {},
+                statuses: {}
+            }
         };
         const { DateTime } = luxon;
+        const { jsPDF } = window.jspdf;
         const dateFormat = 'M/d/yyyy';
-        const ALL_LINES = ['LINE 1', 'LINE 2', 'LINE 3', 'LINE 4'];
         const LOAD_COLORS = [ { background: '#333333', text: '#FFFFFF' }, { background: '#999999', text: '#000000' } ];
         
+        const columnFilterConfig = {
+            'commercial-status': { set: new Set(), dataKey: 'commercialStatus' },
+            'packing-status': { set: new Set(), dataKey: 'packingStatus' },
+            'load': { set: new Set(), dataKey: 'load' },
+            'ship-date': { set: new Set(), dataKey: 'fecha_envio' },
+            'marketer': { set: new Set(), dataKey: 'marketer' },
+            'order-number': { set: new Set(), dataKey: 'order_number' },
+            'pack-style': { set: new Set(), dataKey: 'descripcion' },
+            'label': { set: new Set(), dataKey: 'label' },
+            'production-method': { set: new Set(), dataKey: 'formacion' },
+            'receiver': { set: new Set(), dataKey: 'recibidor' }
+        };
+
         // ========== DOM ELEMENTS ==========
         const tableContainer = document.getElementById('table-container');
-        const filters = {
-            commercialStatus: document.getElementById('commercialStatusFilter'),
-            packingStatus: document.getElementById('packingStatusFilter'),
-            timeframe: document.getElementById('timeframeFilter'),
-            marketer: document.getElementById('marketerFilter'),
-            orderNumber: document.getElementById('orderNumberFilter'),
-            packStyle: document.getElementById('packStyleFilter'),
-            label: document.getElementById('labelFilter'),
-            productionMethod: document.getElementById('productionMethodFilter'),
-            load: document.getElementById('loadFilter')
+        const timeframeFilter = document.getElementById('timeframeFilter');
+        const planningArea = document.getElementById('outfeed-planning-area');
+        const passwordModal = {
+            overlay: document.getElementById('password-modal'),
+            message: document.getElementById('modal-message'),
+            input: document.getElementById('modal-password-input'),
+            submitBtn: document.getElementById('modal-submit-btn'),
+            cancelBtn: document.getElementById('modal-cancel-btn')
         };
-        const filterKeys = Object.keys(filters);
-
-        // ========== HELPER FUNCTIONS ==========
-        function getInitials(name) {
-            if (!name) return '';
-            const words = name.split(/[ &]+/);
-            if (words.length === 1) {
-                return name.substring(0, 2).toUpperCase();
-            }
-            return words.map(w => w[0]).join('').toUpperCase().substring(0, 2);
-        }
+        const printModal = {
+            overlay: document.getElementById('print-modal'),
+            typeSelect: document.getElementById('reportTypeSelect'),
+            periodSelect: document.getElementById('reportPeriodSelect'),
+            designedCheckbox: document.getElementById('designedReportCheckbox'),
+            confirmBtn: document.getElementById('confirmPrintBtn'),
+            cancelBtn: document.getElementById('cancelPrintBtn'),
+            printBtn: document.getElementById('printReportBtn')
+        };
+        const filterPopup = {
+            element: document.getElementById('filter-popup'),
+            search: document.getElementById('filter-popup-search'),
+            body: document.getElementById('filter-popup-body'),
+            applyBtn: document.getElementById('filter-popup-apply'),
+            cancelBtn: document.getElementById('filter-popup-cancel'),
+            clearBtn: document.getElementById('filter-popup-clear')
+        };
 
         // ========== API HELPERS ==========
         async function apiCall(endpoint, method = 'GET', body = null) {
             try {
-                const options = {
-                    method,
-                    headers: { 'Content-Type': 'application/json' },
-                };
-                if (body) {
-                    options.body = JSON.stringify(body);
-                }
+                const options = { method, headers: { 'Content-Type': 'application/json' }, };
+                if (body) { options.body = JSON.stringify(body); }
                 const response = await fetch(endpoint, options);
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'Network response was not ok', success: false }));
-                    return { ...errorData, success: false };
-                }
+                if (!response.ok) { const errorData = await response.json().catch(() => ({ error: 'Network response was not ok', success: false })); return { ...errorData, success: false, isError: true }; }
                 const contentType = response.headers.get("content-type");
-                if (contentType && contentType.indexOf("application/json") !== -1) {
-                    const data = await response.json();
-                    if (data.success === undefined) {
-                        data.success = true;
-                    }
-                    return data;
-                } else {
-                    return { success: true };
-                }
+                if (contentType && contentType.indexOf("application/json") !== -1) { return await response.json(); } 
+                else { return { success: true }; }
             } catch (error) {
                 const errorMessage = `Error en API (${method} ${endpoint}): ${error.message}`;
                 console.error(errorMessage, error);
-                return { success: false, error: errorMessage };
+                return { success: false, error: errorMessage, isError: true };
             }
         }
+
+        // ========== PASSWORD MODAL ==========
+        let resolvePasswordPromise;
+        let rejectPasswordPromise;
+        function showPasswordPrompt(actionText) {
+            return new Promise((resolve, reject) => {
+                resolvePasswordPromise = resolve;
+                rejectPasswordPromise = reject;
+                passwordModal.message.textContent = `Enter password to ${actionText}:`;
+                passwordModal.input.value = '';
+                passwordModal.overlay.style.display = 'flex';
+                passwordModal.input.focus();
+            });
+        }
+        function hidePasswordPrompt() { passwordModal.overlay.style.display = 'none'; }
+        function handlePasswordSubmit() { if (resolvePasswordPromise) { resolvePasswordPromise(passwordModal.input.value); } hidePasswordPrompt(); }
+        function handlePasswordCancel() { if (rejectPasswordPromise) { rejectPasswordPromise(new Error('User cancelled the action.')); } hidePasswordPrompt(); }
+        passwordModal.submitBtn.addEventListener('click', handlePasswordSubmit);
+        passwordModal.cancelBtn.addEventListener('click', handlePasswordCancel);
+        passwordModal.input.addEventListener('keydown', (e) => { if (e.key === 'Enter') handlePasswordSubmit(); else if (e.key === 'Escape') handlePasswordCancel(); });
 
         // ========== AUTH & LOCKING ==========
         async function handleAuthAction(type) {
-            const isCurrentlyUnlocked = (type === 'all') 
-                ? (unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load) 
-                : unlockedColumns[type];
-            
-            if (isCurrentlyUnlocked) {
-                if (type === 'all') {
-                    unlockedColumns.line = unlockedColumns.priority = unlockedColumns.load = false;
-                } else {
-                    unlockedColumns[type] = false;
+            if (type === 'schedule') {
+                unlockedColumns.schedule = !unlockedColumns.schedule;
+                if (unlockedColumns.schedule) {
+                    try {
+                        const password = await showPasswordPrompt(`unlock "Schedule Mode"`);
+                        const result = await apiCall('/api/verify-feature-password', 'POST', { feature: 'schedule', password: password });
+                        if (!result.success) {
+                            alert('Invalid password');
+                            unlockedColumns.schedule = false;
+                        }
+                    } catch (error) {
+                        unlockedColumns.schedule = false;
+                        console.log(error.message);
+                    }
                 }
                 updateActionButtonsState();
-                applyFiltersAndRender();
                 return;
             }
 
-            const password = prompt(`Enter password to unlock "${type}":`);
-            if (password === null) return;
-            
-            const result = await apiCall('/api/verify-feature-password', 'POST', { feature: type, password: password });
-
-            if (result.success) {
-                if (type === 'all') {
-                    unlockedColumns.line = true;
-                    unlockedColumns.priority = true;
-                    unlockedColumns.load = true;
-                } else {
-                    unlockedColumns[type] = true;
-                }
-            } else {
-                alert('Invalid password');
-                return;
+            const isCurrentlyUnlocked = (type === 'all') ? (unlockedColumns.outfeed && unlockedColumns.priority && unlockedColumns.load && unlockedColumns.schedule) : unlockedColumns[type];
+            if (isCurrentlyUnlocked) {
+                if (type === 'all') { unlockedColumns.outfeed = unlockedColumns.priority = unlockedColumns.load = unlockedColumns.schedule = false; } else { unlockedColumns[type] = false; }
+                updateActionButtonsState(); applyFiltersAndRender(); return;
             }
-            
-            updateActionButtonsState();
-            applyFiltersAndRender();
+            try {
+                const password = await showPasswordPrompt(`unlock "${type}"`);
+                const result = await apiCall('/api/verify-feature-password', 'POST', { feature: type, password: password });
+                if (result.success) { 
+                    if (type === 'all') { unlockedColumns.outfeed = true; unlockedColumns.priority = true; unlockedColumns.load = true; unlockedColumns.schedule = true; } 
+                    else { unlockedColumns[type] = true; } 
+                } 
+                else { alert('Invalid password'); return; }
+                updateActionButtonsState(); applyFiltersAndRender();
+            } catch (error) { console.log(error.message); }
         }
 
         function updateActionButtonsState() {
-            document.getElementById('setLineBtn').classList.toggle('active', unlockedColumns.line);
-            document.getElementById('setLineBtn').textContent = unlockedColumns.line ? 'Block Outfeed' : 'Set Outfeed';
+            isSchedulingMode = unlockedColumns.schedule;
+            document.body.classList.toggle('scheduling-mode', isSchedulingMode);
+            const setScheduleBtn = document.getElementById('setScheduleBtn');
+            setScheduleBtn.classList.toggle('active', isSchedulingMode);
+            setScheduleBtn.textContent = isSchedulingMode ? 'Block Schedule' : 'Set Schedule';
+
+            document.getElementById('setOutfeedBtn').classList.toggle('active', unlockedColumns.outfeed);
+            document.getElementById('setOutfeedBtn').textContent = unlockedColumns.outfeed ? 'Block Outfeed' : 'Set Outfeed';
             document.getElementById('setPriorityBtn').classList.toggle('active', unlockedColumns.priority);
             document.getElementById('setPriorityBtn').textContent = unlockedColumns.priority ? 'Block Priority' : 'Set Priority';
             document.getElementById('setLoadBtn').classList.toggle('active', unlockedColumns.load);
             document.getElementById('setLoadBtn').textContent = unlockedColumns.load ? 'Block Load' : 'Set Load';
-            const allUnlocked = unlockedColumns.line && unlockedColumns.priority && unlockedColumns.load;
+            const allUnlocked = unlockedColumns.outfeed && unlockedColumns.priority && unlockedColumns.load && unlockedColumns.schedule;
             document.getElementById('setAllBtn').classList.toggle('active', allUnlocked);
             document.getElementById('setAllBtn').textContent = allUnlocked ? 'Block All' : 'Set All';
         }
@@ -897,25 +760,18 @@
         async function handleToggleAuth(type) {
             const btn = document.getElementById(`toggle${type.charAt(0).toUpperCase() + type.slice(1)}Btn`);
             const className = `show-${type}`;
-
             if (unlockedColumns[type]) {
-                document.body.classList.remove(className);
-                btn.classList.remove('active');
-                btn.textContent = `Show ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                unlockedColumns[type] = false;
+                document.body.classList.remove(className); btn.classList.remove('active');
+                btn.textContent = `Show ${type.charAt(0).toUpperCase() + type.slice(1)}`; unlockedColumns[type] = false;
             } else {
-                const password = prompt(`Enter password to show ${type}:`);
-                if (password === null) return;
-                const result = await apiCall('/api/verify-price-password', 'POST', { password });
-                if (result.success) {
-                    unlockedColumns[type] = true;
-                    document.body.classList.add(className);
-                    btn.classList.add('active');
-                    btn.textContent = `Hide ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-                } else { alert('Invalid password'); }
+                try {
+                    const password = await showPasswordPrompt(`show ${type}`);
+                    const result = await apiCall('/api/verify-price-password', 'POST', { password });
+                    if (result.success) { unlockedColumns[type] = true; document.body.classList.add(className); btn.classList.add('active'); btn.textContent = `Hide ${type.charAt(0).toUpperCase() + type.slice(1)}`; } 
+                    else { alert('Invalid password'); }
+                } catch(error) { console.log(error.message); }
             }
         }
-
 
         // ========== TIMER ==========
         function formatTimer(sec) { if (!sec || sec <= 0) return "-"; let m = Math.floor(sec / 60); let s = sec % 60; return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
@@ -924,585 +780,942 @@
         function startTimer() { if (timerRunning) return; timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; timerRunning = true; document.getElementById('timerBtn').textContent = 'Stop'; document.getElementById('timerBtn').classList.add('timer-stop'); document.getElementById('timerMinutes').disabled = true; updateTimerDisplay(); timerInterval = setInterval(() => { timerSeconds--; updateTimerDisplay(); if (timerSeconds <= 0) { refreshData(); timerSeconds = Math.max(1, parseInt(document.getElementById('timerMinutes').value,10)||5) * 60; updateTimerDisplay(); } }, 1000); }
 
         // ========== DATA HANDLING & LOGIC ==========
-        
-        async function handleLineChange(orderId, standardId, selectedLines) {
-            const assignmentKey = `${orderId}-${standardId}`;
-            if (selectedLines && selectedLines.length > 0) {
-                state.lines[assignmentKey] = selectedLines;
+        async function handleOutfeedChange(checkbox) {
+            const content = checkbox.closest('.multiselect-content');
+            const tr = content.closest('tr');
+            const orderId = parseInt(tr.dataset.orderId, 10);
+            const standardId = tr.dataset.standardId;
+            const outfeedId = parseInt(checkbox.value, 10);
+            
+            if (checkbox.checked) {
+                await apiCall('/api/plan-order', 'POST', {
+                    orderId,
+                    standardId,
+                    outfeedIds: [outfeedId],
+                    isHighPriority: true
+                });
             } else {
-                delete state.lines[assignmentKey];
+                let tagToRemove = null;
+                const queue = state.planningState.queues[outfeedId] || [];
+                const itemInQueue = queue.find(item => item.order_id == orderId && item.standard_id == standardId);
+                if (itemInQueue) {
+                    tagToRemove = itemInQueue.tag;
+                }
+                
+                if (tagToRemove) {
+                    await apiCall('/api/unplan-order', 'POST', { tag: tagToRemove, outfeedId: outfeedId });
+                } else {
+                    console.error(`Could not find tag to remove for order ${orderId} in outfeed ${outfeedId}`);
+                }
             }
-            applyFiltersAndRender();
-            await apiCall('/api/lines', 'POST', { assignmentKey, lines: selectedLines });
+            await refreshData();
         }
 
-        function resequencePriorities() { 
-            const sortedLoads = Object.entries(state.priorities).sort(([, a], [, b]) => a - b).map(([lId]) => lId);
-            const final = {};
-            sortedLoads.forEach((lId, i) => { final[lId] = i + 1; });
-            state.priorities = final;
-            return final;
-        }
 
         async function handlePriorityChange(loadId, newPriorityStr) {
             const newP = newPriorityStr ? parseInt(newPriorityStr, 10) : null;
             const oldP = state.priorities[loadId];
             if (newP === oldP) return;
-
-            if (newP) {
-                for (const lId in state.priorities) {
-                    if (state.priorities[lId] >= newP) state.priorities[lId]++;
-                }
-                state.priorities[loadId] = newP;
-            } else {
-                delete state.priorities[loadId];
-            }
-            
-            const finalPriorities = resequencePriorities();
+            if (newP) { Object.keys(state.priorities).forEach(lId => { if (state.priorities[lId] >= newP) { state.priorities[lId]++; } }); state.priorities[loadId] = newP; } else { delete state.priorities[loadId]; }
+            const sortedLoads = Object.entries(state.priorities).sort(([, a], [, b]) => a - b).map(([lId]) => lId);
+            const finalPriorities = {};
+            sortedLoads.forEach((lId, i) => { finalPriorities[lId] = i + 1; });
+            state.priorities = finalPriorities;
             applyFiltersAndRender();
             await apiCall('/api/priorities', 'POST', finalPriorities);
         }
-
         async function handleLoadChange(orderId, newLoad) {
             const target = allOrders.find(o => o.id_marketer_order === parseInt(orderId, 10));
             if (!target) return;
-
             const siblings = allOrders.filter(o => o.order_number === target.order_number);
             const updates = [];
-            siblings.forEach(s => {
-                if (newLoad) {
-                    state.loads[s.id_marketer_order] = newLoad;
-                } else {
-                    delete state.loads[s.id_marketer_order];
-                }
-                updates.push({ orderId: s.id_marketer_order, load: newLoad });
-            });
-            
+            siblings.forEach(s => { if (newLoad) { state.loads[s.id_marketer_order] = newLoad; } else { delete state.loads[s.id_marketer_order]; } updates.push({ orderId: s.id_marketer_order, load: newLoad }); });
             applyFiltersAndRender();
             await apiCall('/api/loads', 'POST', { updates });
         }
-        
-        function getNextAvailableLoad(usedLoads) {
-            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-            for (const letter of alphabet) {
-                if (!usedLoads.includes(letter)) {
-                    return letter;
-                }
-            }
-            let next = 'AA';
-            while(usedLoads.includes(next)) {
-                const lastChar = next.slice(-1);
-                if (lastChar < 'Z') {
-                    next = next.slice(0, -1) + String.fromCharCode(lastChar.charCodeAt(0) + 1);
-                } else {
-                    next += 'A';
-                }
-            }
-            return next;
-        }
-
+        function getNextAvailableLoad(usedLoads) { const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); for (const letter of alphabet) { if (!usedLoads.includes(letter)) return letter; } let next = 'AA'; while(usedLoads.includes(next)) { const lastChar = next.slice(-1); if (lastChar < 'Z') { next = next.slice(0, -1) + String.fromCharCode(lastChar.charCodeAt(0) + 1); } else { next += 'A'; } } return next; }
         function compareLoads(a, b) { const la = a || 'ZZZ', lb = b || 'ZZZ'; return la.length !== lb.length ? la.length - lb.length : la.localeCompare(lb); }
         
         function getPackingStatus(order) {
-            const shipC = parseFloat(order.cantidad_despachada) || 0;
-            if (shipC > 0) return 'shipped';
+            if ((parseFloat(order.cantidad_despachada) || 0) > 0) return 'SHIPPED';
+            const req = parseFloat(order.cantidad_solicitada) || 0;
+            if (req > 0) {
+                const ass = parseFloat(order.cantidad_asignada) || 0;
+                const cxp = parseFloat(order.cajas_por_pallet) || 1;
+                if (ass / cxp >= req / cxp) return 'DONE';
+            }
+            
+            for (const outfeedId in state.planningState.queues) {
+                const queue = state.planningState.queues[outfeedId];
+                if (queue && queue.length > 0) {
+                    const topItem = queue[0];
+                    const outfeedStatus = state.planningState.statuses[outfeedId] || 'PAUSED';
+                    if (topItem.order_id == order.id_marketer_order && topItem.standard_id == order.codigo_producto && outfeedStatus === 'RUNNING') {
+                        return 'BEING PACKED';
+                    }
+                }
+            }
 
-            const key = `${order.id_marketer_order}-${order.codigo_producto}`; 
-            const lines = state.lines[key]; 
-            if (lines && Array.isArray(lines) && lines.length > 0) return 'being_packed'; 
-            
-            const req = (parseFloat(order.cantidad_solicitada) || 0);
-            if (req === 0) return 'pending';
-            
-            const ass = (parseFloat(order.cantidad_asignada) || 0);
-            const cxp = (parseFloat(order.cajas_por_pallet) || 1);
-            const reqPallets = req / cxp;
-            const assPallets = ass / cxp;
-
-            if (assPallets >= reqPallets) return 'done';
-            if (assPallets > 0) return 'partially';
-            
-            return 'pending'; 
+            if ((parseFloat(order.cantidad_asignada) || 0) > 0) return 'PARTIALLY';
+            return 'PENDING';
         }
 
         // ========== FILTERING & RENDERING ==========
-        function applyFiltersAndRender() {
-            const selections = {}; filterKeys.forEach(k => { selections[k] = filters[k].value; });
-            
-            const ordersWithLoad = allOrders.map(o => ({
+        function getCurrentFilteredData() {
+            let filteredData = allOrders.map(o => ({
                 ...o,
-                load: state.loads[o.id_marketer_order] || ''
+                load: state.loads[o.id_marketer_order] || '',
+                packingStatus: getPackingStatus(o),
+                commercialStatus: o.estado_marketer_order === 'activa' ? 'OPEN' : 'CLOSED'
             }));
 
-            let filtered = ordersWithLoad.filter(o => filterKeys.every(k => checkMatch(o, k, selections[k])));
-            
-            if (selectedShipDates.size > 0) { filtered = filtered.filter(o => selectedShipDates.has(o.fecha_envio)); }
-            
-            if (filters.load.value !== "all") { 
-                filtered = filtered.filter(o => o.load === filters.load.value); 
-                const seen = new Set(); 
-                filtered = filtered.filter(o => { const key = `${o.id_marketer_order}-${o.codigo_producto}`; if (seen.has(key)) return false; seen.add(key); return true; }); 
-            }
+            const timeframeValue = timeframeFilter.value;
 
-            filterKeys.forEach(k => { if (k === 'commercialStatus' || k === 'packingStatus') return; const relevant = ordersWithLoad.filter(o => filterKeys.every(fk => fk === k ? true : checkMatch(o, fk, selections[fk]))); populateFilterOptions(k, relevant, selections[k]); });
-            
-            populateShipDateFilter(filtered);
-            renderTable(filtered);
-        }
-        function checkMatch(order, key, value) {
-            if (value === 'all' || value === 'all_time' || !value) return true;
-            switch (key) {
-                case 'commercialStatus': return (value === 'open' ? order.estado_marketer_order === 'activa' : order.estado_marketer_order === 'cerrada');
-                case 'packingStatus': return getPackingStatus(order) === value;
-                case 'timeframe':
-                    const now = DateTime.now().startOf('day'), orderDate = DateTime.fromFormat(order.fecha_envio, dateFormat).startOf('day'); if (!orderDate.isValid) return false;
-                    switch (value) {
-                        case 'today_past': return orderDate <= now; case 'through_tomorrow': return orderDate <= now.plus({ days: 1 }); case 'tomorrow': return orderDate.hasSame(now.plus({ days: 1 }), 'day'); case 'this_week': return orderDate.hasSame(now, 'week'); case 'next_week': return orderDate.hasSame(now.plus({ weeks: 1 }), 'week');
-                        default: if (value.startsWith('20')) { const [y, w] = value.split('-W'); return orderDate.weekYear === parseInt(y) && orderDate.weekNumber === parseInt(w); } return false;
-                    }
-                case 'marketer': return order.marketer === value; case 'packStyle': return order.descripcion === value; case 'label': return order.label === value; case 'productionMethod': return order.formacion === value; case 'orderNumber': return order.order_number === value; case 'load': return value === 'all' ? true : (order.load || '') === value;
-                default: return true;
-            }
-        }
-        function populateFilterOptions(key, relevantData, selectedValue) {
-            const select = filters[key];
-            if (key === 'timeframe') {
-                const timeframeStaticOptions = [ { value: "all_time", text: "All Time" }, { value: "today_past", text: "Today & Past" }, { value: "through_tomorrow", text: "Through Tomorrow" }, { value: "tomorrow", text: "Tomorrow" }, { value: "this_week", text: "This Week" }, { value: "next_week", text: "Next Week" } ];
-                select.innerHTML = ''; const weekOpts = new Map();
-                relevantData.forEach(o => { const d = DateTime.fromFormat(o.fecha_envio, dateFormat); if (d.isValid) { const k = `${d.weekYear}-W${d.weekNumber}`; if (!weekOpts.has(k)) { const start = d.startOf('week'), end = d.endOf('week'); weekOpts.set(k, { label: `Week ${d.weekNumber} (${start.toFormat('MMM d')} - ${end.toFormat('MMM d')})`, value: k, start }); } } });
-                timeframeStaticOptions.forEach(opt => { const el = document.createElement('option'); el.value = opt.value; el.textContent = opt.text; select.appendChild(el); });
-                Array.from(weekOpts.values()).sort((a,b) => a.start - b.start).forEach(w => { const el = document.createElement('option'); el.value = w.value; el.textContent = w.label; select.appendChild(el); });
-            } else if (key === 'load') {
-                select.innerHTML = '<option value="all">All</option>';
-                Array.from(new Set(Object.values(state.loads))).sort(compareLoads).forEach(load => { const el = document.createElement('option'); el.value = load; el.textContent = load; select.appendChild(el); });
+            if (timeframeValue === 'all_status_all_time') {
+                // No filter on date or status
             } else {
-                let dataKey; if (key === 'packStyle') dataKey = 'descripcion'; else if (key === 'productionMethod') dataKey = 'formacion'; else if (key === 'orderNumber') dataKey = 'order_number'; else dataKey = key;
-                const opts = [...new Set(relevantData.map(o => o[dataKey]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
-                select.innerHTML = '<option value="all">All</option>'; opts.forEach(opt => { const el = document.createElement('option'); el.value = opt; el.textContent = opt; select.appendChild(el); });
-            }
-            select.value = Array.from(select.options).map(o => o.value).includes(selectedValue) ? selectedValue : (key === 'timeframe' ? 'all_time' : 'all');
-        }
-        
-        function createDonutChart(percentage) {
-            const size = 46;
-            const strokeWidth = 4;
-            const radius = (size / 2) - strokeWidth;
-            const center = size / 2;
-            const circumference = radius * 2 * Math.PI;
-            const offset = circumference - (percentage / 100) * circumference;
-            let colorClass = 'red';
-            if (percentage > 75) colorClass = 'dark-green';
-            else if (percentage > 50) colorClass = 'light-green';
-            else if (percentage > 25) colorClass = 'yellow';
-            const textContent = percentage === 100 ? '✔️' : `${percentage}%`;
-            const fontSize = percentage === 100 ? '14px' : '12px';
-            return `<svg class="progress-donut" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle class="progress-donut-bg" r="${radius}" cx="${center}" cy="${center}" stroke-width="${strokeWidth}"></circle><circle class="progress-donut-fg ${colorClass}" r="${radius}" cx="${center}" cy="${center}" stroke-width="${strokeWidth}" stroke-dasharray="${circumference} ${circumference}" stroke-dashoffset="${offset}"></circle><text class="progress-donut-text" x="${center}" y="${center}" transform="rotate(90 ${center} ${center})" style="font-size: ${fontSize};">${textContent}</text></svg>`;
-        }
-        
-        // === FUNCIÓN renderTable ACTUALIZADA ===
-        function renderTable(data) {
-            const getSortString = o => { 
-                const ps = getPackingStatus(o);
-                const ip = ps === 'being_packed';
-                const u = ip ? '1' : '2';
-                const key = `${o.id_marketer_order}-${o.codigo_producto}`;
-                const l = ip ? (state.lines[key]?.[0] || 'Z') : 'Z';
-                const p = state.priorities[o.load] || 999;
-                const lo = o.load || 'ZZZ';
-                const sd = DateTime.fromFormat(o.fecha_envio, dateFormat).toISODate() || '9999-12-31';
-                const m = o.marketer || '~';
-                const on = String(o.order_number || '~').padStart(10, '0');
-                return `${u}-${l}-${p.toString().padStart(3, '0')}-${lo}-${sd}-${m}-${on}`;
-            };
-            const sortedData = [...data].sort((a, b) => getSortString(a).localeCompare(getSortString(b)));
-            const finalData = sortedData.filter(o => (parseFloat(o.cajas_por_pallet) || 0) > 0 && (parseFloat(o.cantidad_solicitada) / (parseFloat(o.cajas_por_pallet) || 1)) > 0);
-            if (finalData.length === 0) { tableContainer.innerHTML = `<p class="loading">No orders match the current filters.</p>`; return; }
-            
-            const totals = { request: 0, assigned: 0, pending: 0, balancePounds: 0, shipped: 0 };
-            finalData.forEach(o => { 
-                const reqC = parseFloat(o.cantidad_solicitada) || 0, assC = parseFloat(o.cantidad_asignada) || 0, shipC = parseFloat(o.cantidad_despachada) || 0, pC = parseFloat(o.peso_por_caja) || 0, cxp = parseFloat(o.cajas_por_pallet) || 1;
-                const reqN = reqC / cxp, assN = assC / cxp, shipN = shipC / cxp;
-                totals.request += reqN; 
-                totals.assigned += assN; 
-                totals.pending += reqN - (assN + shipN); 
-                totals.balancePounds += (reqC - (assC + shipC)) * pC; 
-                totals.shipped += shipN;
-            });
-            const totalsRowHTML = `<tr class="totals-row">
-                <td colspan="12"></td>
-                <td class="numeric-cell">${totals.request.toFixed(2)}</td>
-                <td class="numeric-cell">${totals.assigned.toFixed(2)}</td>
-                <td class="numeric-cell">${totals.pending.toFixed(2)}</td>
-                <td class="numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td>
-                <td class="col-availability"></td>
-                <td class="col-availability"></td>
-                <td class="numeric-cell">${totals.shipped.toFixed(2)}</td>
-                <td class="col-price"></td>
-                <td class="col-receiver"></td>
-                <td class="col-address"></td>
-                <td class="col-boxes-pallet"></td>
-                <td class="col-pound-box"></td>
-            </tr>`;
-            
-            const loadOwnership = new Map(); allOrders.forEach(o => { const load = state.loads[o.id_marketer_order]; if (o.estado_marketer_order === 'activa' && load && !loadOwnership.has(load)) { loadOwnership.set(load, o.marketer); } });
-            const allUsedLoads = Array.from(new Set(Object.values(state.loads))).sort(compareLoads);
-            const nextAvailableGlobalLoad = getNextAvailableLoad(allUsedLoads);
-            const occupiedLines = new Set(Object.values(state.lines).flat());
-            const existingPriorities = Object.values(state.priorities);
-            const maxPriority = existingPriorities.length > 0 ? Math.max(...existingPriorities) : 0;
-            
-            const rowsToFlashForLoadCompletion = new Set();
-            const loadsData = finalData.reduce((acc, order) => {
-                const loadId = state.loads[order.id_marketer_order];
-                if (!loadId) return acc;
-                if (!acc[loadId]) acc[loadId] = [];
-                acc[loadId].push(order);
-                return acc;
-            }, {});
-
-            for (const loadId in loadsData) {
-                let requestSum = 0;
-                let assignedSum = 0;
-                const candidateOrders = [];
-
-                loadsData[loadId].forEach(order => {
-                    if (getPackingStatus(order) !== 'being_packed') {
-                        const cxp = parseFloat(order.cajas_por_pallet) || 1;
-                        requestSum += (parseFloat(order.cantidad_solicitada) || 0) / cxp;
-                        assignedSum += (parseFloat(order.cantidad_asignada) || 0) / cxp;
-                        candidateOrders.push(order);
+                const selectedOption = timeframeFilter.options[timeframeFilter.selectedIndex];
+                if (selectedOption) {
+                    const groupLabel = selectedOption.parentElement.label;
+                    if (groupLabel === '--- Default Open Orders ---') {
+                        filteredData = filteredData.filter(o => o.commercialStatus === 'OPEN');
                     }
-                });
+                }
 
-                const deficit = requestSum - assignedSum;
-                if (deficit > 0.99 && deficit < 1.01) {
-                    candidateOrders.forEach(order => {
-                        const cxp = parseFloat(order.cajas_por_pallet) || 1;
-                        const reqN = (parseFloat(order.cantidad_solicitada) || 0) / cxp;
-                        const assN = (parseFloat(order.cantidad_asignada) || 0) / cxp;
-                        if (reqN - assN > 0) {
-                            rowsToFlashForLoadCompletion.add(`${order.id_marketer_order}-${order.codigo_producto}`);
+                if (timeframeValue && timeframeValue !== 'all_time' && timeframeValue !== 'all_status_all_time') {
+                    const now = DateTime.now().startOf('day');
+                    filteredData = filteredData.filter(o => {
+                        const orderDate = DateTime.fromFormat(o.fecha_envio, dateFormat).startOf('day');
+                        if (!orderDate.isValid) return false;
+                        switch (timeframeValue) {
+                            case 'today_past': return orderDate <= now;
+                            case 'today_future': return orderDate >= now;
+                            case 'through_tomorrow': return orderDate <= now.plus({ days: 1 });
+                            case 'tomorrow': return orderDate.hasSame(now.plus({ days: 1 }), 'day');
+                            case 'this_week': return orderDate.hasSame(now, 'week');
+                            case 'next_week': return orderDate.hasSame(now.plus({ weeks: 1 }), 'week');
+                            default:
+                                if (timeframeValue.startsWith('20')) {
+                                    const [y, w] = timeframeValue.split('-W');
+                                    return orderDate.weekYear === parseInt(y) && orderDate.weekNumber === parseInt(w);
+                                }
+                                return true;
                         }
                     });
                 }
             }
 
+            for (const config of Object.values(columnFilterConfig)) {
+                if (config.set.size > 0) {
+                    filteredData = filteredData.filter(o => config.set.has(String(o[config.dataKey])));
+                }
+            }
+            return filteredData;
+        }
+
+
+        function applyFiltersAndRender() {
+            const filteredData = getCurrentFilteredData();
+            renderTable(filteredData);
+            renderPlanningArea();
+        }
+        
+        function populateTimeframeFilter(data) {
+            const select = timeframeFilter;
+            const currentValue = select.value;
+            select.innerHTML = '';
+
+            const openGroup = document.createElement('optgroup');
+            openGroup.label = '--- Default Open Orders ---';
+            const openOptions = [
+                { value: "all_time", text: "All Time" },
+                { value: "today_past", text: "Today & Past" },
+                { value: "today_future", text: "Today & Future" },
+                { value: "through_tomorrow", text: "Through Tomorrow" },
+                { value: "tomorrow", text: "Tomorrow" },
+                { value: "this_week", text: "This Week" },
+                { value: "next_week", text: "Next Week" }
+            ];
+            openOptions.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                openGroup.appendChild(el);
+            });
+            select.appendChild(openGroup);
+
+            const allStatusGroup = document.createElement('optgroup');
+            allStatusGroup.label = '--- All Status Orders ---';
+            
+            const allTimeOpt = document.createElement('option');
+            allTimeOpt.value = "all_status_all_time";
+            allTimeOpt.textContent = "All Time";
+            allStatusGroup.appendChild(allTimeOpt);
+
+            const weekOpts = new Map();
+            data.forEach(o => {
+                const d = DateTime.fromFormat(o.fecha_envio, dateFormat);
+                if (d.isValid) {
+                    const k = `${d.weekYear}-W${d.weekNumber}`;
+                    if (!weekOpts.has(k)) {
+                        const start = d.startOf('week');
+                        const end = d.endOf('week');
+                        weekOpts.set(k, {
+                            label: `Week ${d.weekNumber} (${start.toFormat('MMM d')} - ${end.toFormat('MMM d')})`,
+                            value: k,
+                            start: start
+                        });
+                    }
+                }
+            });
+            
+            Array.from(weekOpts.values()).sort((a,b) => a.start - b.start).forEach(w => {
+                const el = document.createElement('option');
+                el.value = w.value;
+                el.textContent = w.label;
+                allStatusGroup.appendChild(el);
+            });
+            if (weekOpts.size > 0 || allTimeOpt) {
+                select.appendChild(allStatusGroup);
+            }
+
+            select.value = Array.from(select.options).map(o => o.value).includes(currentValue) ? currentValue : 'today_past';
+        }
+
+        function populatePrintPeriodFilter() {
+            const printSelect = printModal.periodSelect;
+            printSelect.innerHTML = timeframeFilter.innerHTML;
+            printSelect.value = timeframeFilter.value;
+        }
+
+
+        function createDonutChart(percentage) {
+            const size = 46, strokeWidth = 4, radius = (size / 2) - strokeWidth, center = size / 2, circumference = radius * 2 * Math.PI, offset = circumference - (percentage / 100) * circumference;
+            let colorClass = 'red'; if (percentage > 75) colorClass = 'dark-green'; else if (percentage > 50) colorClass = 'light-green'; else if (percentage > 25) colorClass = 'yellow';
+            const textContent = percentage === 100 ? '✔️' : `${percentage}%`; const fontSize = percentage === 100 ? '14px' : '12px';
+            return `<svg class="progress-donut" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle class="progress-donut-bg" r="${radius}" cx="${center}" cy="${center}" stroke-width="${strokeWidth}"></circle><circle class="progress-donut-fg ${colorClass}" r="${radius}" cx="${center}" cy="${center}" stroke-width="${strokeWidth}" stroke-dasharray="${circumference} ${circumference}" stroke-dashoffset="${offset}"></circle><text class="progress-donut-text" x="${center}" y="${center}" transform="rotate(90 ${center} ${center})" style="font-size: ${fontSize};">${textContent}</text></svg>`;
+        }
+
+        function renderPlanningArea() {
+            if (!planningArea) return;
+            planningArea.innerHTML = '';
+
+            allOutfeeds.forEach(outfeed => {
+                const outfeedId = outfeed.id;
+                const outfeedName = `OUTFEED ${outfeedId}` + (outfeed.description ? ` - ${outfeed.description}` : '');
+                const outfeedStatus = state.planningState.statuses[outfeedId] || 'PAUSED';
+                const queue = state.planningState.queues[outfeedId] || [];
+
+                const col = document.createElement('div');
+                col.className = 'outfeed-column';
+                col.dataset.outfeedId = outfeedId;
+
+                const playIcon = `<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+                const pauseIcon = `<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+
+                col.innerHTML = `
+                    <div class="outfeed-column-header">
+                        <span>${outfeedName}</span>
+                        <button class="outfeed-status-toggle ${outfeedStatus.toLowerCase()}" data-outfeed-id="${outfeedId}" title="Toggle status">
+                            ${outfeedStatus === 'RUNNING' ? pauseIcon : playIcon}
+                        </button>
+                    </div>
+                    <ul class="outfeed-queue-list" data-outfeed-id="${outfeedId}"></ul>
+                `;
+
+                const listEl = col.querySelector('.outfeed-queue-list');
+                queue.forEach((item, index) => {
+                    const position = index + 1;
+                    const isTopItem = index === 0;
+                    const isRunning = isTopItem && outfeedStatus === 'RUNNING';
+                    const itemStatusText = isRunning ? 'BEING PACKED' : 'QUEUED';
+
+                    const li = document.createElement('li');
+                    li.className = 'queue-tag';
+                    if (isRunning) {
+                        li.classList.add('running-item');
+                    }
+                    li.dataset.tag = item.tag;
+                    li.dataset.orderId = item.order_id;
+                    li.dataset.standardId = item.standard_id;
+                    
+                    li.innerHTML = `
+                        <span class="queue-tag-position">${position}</span> - 
+                        <span class="queue-tag-id">${item.tag}</span> - 
+                        <span class="queue-tag-status">${itemStatusText}</span>
+                    `;
+                    listEl.appendChild(li);
+                });
+
+                planningArea.appendChild(col);
+            });
+            setupPlanningAreaSortable();
+        }
+        
+        function renderTable(data) {
+            const getSortString = o => {
+                const packingStatus = o.packingStatus;
+                const isBeingPacked = packingStatus === 'BEING PACKED';
+                const u = isBeingPacked ? '1' : '2';
+
+                let outfeedInfo = 'Z';
+                if (isBeingPacked) {
+                    for (const outfeedId in state.planningState.queues) {
+                        const queue = state.planningState.queues[outfeedId];
+                        if (queue && queue.length > 0 && queue[0].order_id == o.id_marketer_order && queue[0].standard_id == o.codigo_producto) {
+                            outfeedInfo = outfeedId;
+                            break;
+                        }
+                    }
+                }
+                
+                const p = state.priorities[o.load] || 999;
+                const lo = o.load || 'ZZZ';
+                const sd = DateTime.fromFormat(o.fecha_envio, dateFormat).toISODate() || '9999-12-31';
+                const m = o.marketer || '~';
+                const on = String(o.order_number || '~').padStart(10, '0');
+                return `${u}-${outfeedInfo}-${p.toString().padStart(3, '0')}-${lo}-${sd}-${m}-${on}`;
+            };
+
+            const sortedData = [...data].sort((a, b) => getSortString(a).localeCompare(getSortString(b)));
+            const finalData = sortedData.filter(order => (parseFloat(order.cajas_por_pallet) || 0) > 0 && (parseFloat(order.cantidad_solicitada) / (parseFloat(order.cajas_por_pallet) || 1)) > 0);
+            
+            if (finalData.length === 0) { 
+                tableContainer.innerHTML = `<p class="loading">No orders match the current filters.</p>`; 
+                return; 
+            }
+            
+            const totals = { request: 0, assigned: 0, pending: 0, balancePounds: 0, shipped: 0 };
+            finalData.forEach(o => { const reqC = parseFloat(o.cantidad_solicitada) || 0, assC = parseFloat(o.cantidad_asignada) || 0, shipC = parseFloat(o.cantidad_despachada) || 0, pC = parseFloat(o.peso_por_caja) || 0, cxp = parseFloat(o.cajas_por_pallet) || 1; const reqN = reqC / cxp, assN = assC / cxp, shipN = shipC / cxp; totals.request += reqN; totals.assigned += assN; totals.pending += reqN - (assN + shipN); totals.balancePounds += (reqC - (assC + shipN)) * pC; totals.shipped += shipN; });
+            
+            const baseCols = 11;
+            let visibleOptionalCols = 0;
+            if (document.body.classList.contains('show-price')) visibleOptionalCols++;
+            const totalColspan = baseCols + visibleOptionalCols;
+            const totalsRowHTML = `<tr class="totals-row"><td colspan="${totalColspan}"></td><td></td><td class="numeric-cell">${totals.request.toFixed(2)}</td><td class="numeric-cell">${totals.assigned.toFixed(2)}</td><td class="numeric-cell">${totals.pending.toFixed(2)}</td><td class="col-balance-pound numeric-cell">${totals.balancePounds.toLocaleString('en-US', {maximumFractionDigits: 0})}</td><td class="col-availability"></td><td class="col-availability"></td><td class="numeric-cell">${totals.shipped.toFixed(2)}</td><td class="col-receiver"></td><td class="col-address"></td><td class="col-boxes-pallet"></td><td class="col-pound-box"></td></tr>`;
+            
+            const loadOwnership = new Map(); allOrders.forEach(o => { const load = state.loads[o.id_marketer_order]; if (o.estado_marketer_order === 'activa' && load && !loadOwnership.has(load)) { loadOwnership.set(load, o.marketer); } });
+            const allUsedLoads = Array.from(new Set(Object.values(state.loads))).sort(compareLoads);
+            const nextAvailableGlobalLoad = getNextAvailableLoad(allUsedLoads);
+            
+            const existingPriorities = Object.values(state.priorities);
+            const maxPriority = existingPriorities.length > 0 ? Math.max(...existingPriorities) : 0;
             const loadIsDoneCache = {};
+            const allLoadsInSystem = new Set(allOrders.map(o => state.loads[o.id_marketer_order]).filter(Boolean));
+            allLoadsInSystem.forEach(loadId => { const allOrdersInLoad = allOrders.filter(o => state.loads[o.id_marketer_order] === loadId); loadIsDoneCache[loadId] = allOrdersInLoad.length > 0 && allOrdersInLoad.every(o => { const status = getPackingStatus(o); return status === 'DONE' || status === 'SHIPPED'; }); });
 
             let lastProcessedLoad = null, colorIndex = 0, lastOrderNumberForColor = null;
             const dataRowsHTML = finalData.map((order, index) => {
-                const isClosed = order.estado_marketer_order === 'cerrada';
-                const packingStatusValue = getPackingStatus(order);
-                const assignmentKey = `${order.id_marketer_order}-${order.codigo_producto}`;
-                const currentLoad = state.loads[order.id_marketer_order] || '';
+                const isClosed = order.commercialStatus === 'CLOSED';
+                const packingStatusValue = order.packingStatus;
+                
                 const reqC = parseFloat(order.cantidad_solicitada) || 0, assC = parseFloat(order.cantidad_asignada) || 0, shipC = parseFloat(order.cantidad_despachada) || 0, pC = parseFloat(order.peso_por_caja) || 0, cxp = parseFloat(order.cajas_por_pallet) || 1, disp = parseFloat(order.cantidad_disponible) || 0;
-                const reqN = reqC/cxp, assN = assC/cxp, shipN = shipC/cxp, pendN = reqN - (assN+shipN), balP = (reqC - (assC+shipN)) * pC;
+                const reqN = reqC/cxp, assN = assC/cxp, shipN = shipC/cxp, pendN = reqN - (assN+shipN), balP = (reqC - (assN+shipN)) * pC;
                 const availP = !isClosed ? Math.floor(disp / cxp) : 0; const availB = !isClosed ? disp - (availP * cxp) : 0;
+                let packingStatusClasses = `status status-${packingStatusValue.toLowerCase().replace(' ', '_')}`;
+                if (packingStatusValue === 'BEING PACKED') { const pendingPallets = Math.floor(pendN); if (pendingPallets === 2) { packingStatusClasses += ' flash-orange'; } else if (pendingPallets === 1) { packingStatusClasses += ' flash-red'; } }
+                const packingStatusCellHTML = `<td data-label="PACKING STATUS"><span class="${packingStatusClasses}">${packingStatusValue}</span></td>`;
                 
-                let packingStatusClasses = `status status-${packingStatusValue}`;
-                if (packingStatusValue === 'being_packed') {
-                    const pendingPallets = Math.floor(pendN);
-                    if (pendingPallets === 2) { packingStatusClasses += ' flash-orange'; } else if (pendingPallets === 1) { packingStatusClasses += ' flash-red'; }
-                } else if (rowsToFlashForLoadCompletion.has(assignmentKey)) {
-                    packingStatusClasses += ' flash-orange';
+                let outfeedDisplayText = '-';
+                if (packingStatusValue === 'BEING PACKED') {
+                    let outfeedDisplayParts = [];
+                    for (const outfeedId in state.planningState.queues) {
+                        const queue = state.planningState.queues[outfeedId] || [];
+                        if (queue.length > 0) {
+                            const isRunningInThisQueue = queue[0].order_id == order.id_marketer_order && queue[0].standard_id == order.codigo_producto && state.planningState.statuses[outfeedId] === 'RUNNING';
+                            if (isRunningInThisQueue) {
+                                const outfeed = allOutfeeds.find(o => o.id == outfeedId);
+                                if (outfeed) {
+                                    let text = `OUTFEED ${outfeed.id}`;
+                                    if (queue.length > 1) {
+                                        text += ` (Next ${queue[1].tag})`;
+                                    }
+                                    outfeedDisplayParts.push(text);
+                                }
+                            }
+                        }
+                    }
+                    if (outfeedDisplayParts.length > 0) {
+                        outfeedDisplayText = outfeedDisplayParts.join('<br>');
+                    }
                 }
 
-                const packingStatusCellHTML = `<td data-label="PACKING STATUS"><span class="${packingStatusClasses}">${packingStatusValue.replace('_', ' ').toUpperCase()}</span></td>`;
-                let currentLines = state.lines[assignmentKey];
-                if (typeof currentLines === 'string') { currentLines = [currentLines]; } else if (!Array.isArray(currentLines)) { currentLines = []; }
-                let lineCellHTML;
-                const isLineEligible = !isClosed && ['pending', 'partially', 'being_packed'].includes(packingStatusValue);
-                if (isLineEligible) {
-                    const lineBtnId = `line-btn-${order.id_marketer_order}-${order.codigo_producto}`;
-                    const lineContentId = `line-content-${order.id_marketer_order}-${order.codigo_producto}`;
-                    const btnContent = currentLines.length > 0 ? currentLines.join('<br>') : '-';
-                    lineCellHTML = `<td class="multiselect-cell" data-label="OUTFEED"><button id="${lineBtnId}" class="multiselect-btn">${btnContent}</button><div id="${lineContentId}" class="multiselect-content">${ALL_LINES.map(line => { const isChecked = currentLines.includes(line); const isOccupied = occupiedLines.has(line) && !isChecked; const disabledClass = isOccupied ? 'class="disabled"' : ''; return `<label ${disabledClass}><input type="checkbox" value="${line}" ${isChecked ? 'checked' : ''} ${isOccupied || !unlockedColumns.line ? 'disabled' : ''}> ${line}</label>`; }).join('')}</div></td>`;
+                let outfeedCellHTML;
+                if (unlockedColumns.outfeed && !isClosed && ['PENDING', 'PARTIALLY', 'BEING PACKED'].includes(packingStatusValue)) {
+                    const assignedOutfeedIds = [];
+                     for (const outfeedId in state.planningState.queues) {
+                        if (state.planningState.queues[outfeedId].some(item => item.order_id == order.id_marketer_order && item.standard_id == order.codigo_producto)) {
+                            assignedOutfeedIds.push(outfeedId);
+                        }
+                    }
+                    const btnContent = outfeedDisplayText;
+                    const outfeedOptionsHTML = allOutfeeds.map(outfeed => {
+                        const isChecked = assignedOutfeedIds.includes(String(outfeed.id));
+                        return `<label><input type="checkbox" value="${outfeed.id}" ${isChecked ? 'checked' : ''}> OUTFEED ${outfeed.id}${outfeed.description ? ` - ${outfeed.description}`: ''}</label>`;
+                    }).join('');
+                    outfeedCellHTML = `<td class="multiselect-cell" data-label="OUTFEED"><button class="multiselect-btn">${btnContent}</button><div class="multiselect-content">${outfeedOptionsHTML}</div></td>`;
                 } else {
-                    lineCellHTML = `<td data-label="OUTFEED" style="text-align: left; font-weight: bold;">${currentLines.join('<br>') || '-'}</td>`;
-                }
-                const currentPriority = state.priorities[currentLoad];
-                
-                let loadCellHTML;
-                let loadDef = null; 
-                if (currentLoad) {
-                    if (lastOrderNumberForColor !== order.order_number) { 
-                        if (lastProcessedLoad !== currentLoad) { 
-                            colorIndex = 1 - colorIndex; 
-                            lastProcessedLoad = currentLoad; 
-                        } 
-                        lastOrderNumberForColor = order.order_number; 
-                    } 
-                    loadDef = LOAD_COLORS[colorIndex];
+                    outfeedCellHTML = `<td data-label="OUTFEED" style="text-align: center; font-weight: bold;">${outfeedDisplayText}</td>`;
                 }
 
-                const isLoadDisabled = !!currentPriority || !unlockedColumns.load || isClosed || packingStatusValue === 'shipped';
+                const currentLoad = order.load;
+                let loadCellHTML; let loadDef = null; if (currentLoad) { if (lastOrderNumberForColor !== order.order_number) { if (lastProcessedLoad !== currentLoad) { colorIndex = 1 - colorIndex; lastProcessedLoad = currentLoad; } lastOrderNumberForColor = order.order_number; } loadDef = LOAD_COLORS[colorIndex]; }
+                
+                let tagForLoadCell = '';
+                for (const outfeedId in state.planningState.queues) {
+                    const itemInQueue = state.planningState.queues[outfeedId].find(item => item.order_id == order.id_marketer_order && item.standard_id == order.codigo_producto);
+                    if (itemInQueue) {
+                        tagForLoadCell = itemInQueue.tag;
+                        break;
+                    }
+                }
+                const loadDisplayText = tagForLoadCell || currentLoad || '-';
+
+                const gripHandleHTML = `<span class="draggable-handle" title="Drag to schedule">📌</span>`;
+                const isDraggable = currentLoad && !isClosed && ['PENDING', 'PARTIALLY'].includes(packingStatusValue);
+
+                const isLoadDisabled = !!state.priorities[currentLoad] || !unlockedColumns.load || isClosed || ['SHIPPED', 'DONE'].includes(packingStatusValue);
                 if (isLoadDisabled) {
                     const bgColor = currentLoad ? loadDef.background : '#f0f2f5';
                     const textColor = currentLoad ? loadDef.text : '#aaa';
-                    loadCellHTML = `<td data-label="LOAD"><span class="cell-tag" style="background-color: ${bgColor}; color: ${textColor};">${currentLoad || '-'}</span></td>`;
+                    loadCellHTML = `<td data-label="LOAD" style="text-align: left;"><span class="cell-tag" style="background-color: ${bgColor}; color: ${textColor}; text-align: left;">${loadDisplayText}</span>${isDraggable ? gripHandleHTML : ''}</td>`;
                 } else {
-                    const marketerLoads = []; 
+                    const marketerLoads = [];
                     loadOwnership.forEach((owner, load) => { if (owner === order.marketer) marketerLoads.push(load); });
                     const uniqueOpts = [...new Set([...marketerLoads, nextAvailableGlobalLoad, currentLoad].filter(Boolean))].sort(compareLoads);
                     const bgColor = loadDef ? loadDef.background : 'transparent';
                     const textColor = loadDef ? loadDef.text : '#000';
-                    loadCellHTML = `<td data-label="LOAD"><div class="tag-select-wrapper"><span class="cell-tag" style="background-color:${bgColor}; color:${textColor};">${currentLoad || '-'}<select class="load-select" style="color:${textColor};" onchange="handleLoadChange('${order.id_marketer_order}', this.value)"><option value="">${currentLoad ? 'Clear' : '-'}</option>${uniqueOpts.map(l => `<option value="${l}" ${currentLoad === l ? 'selected' : ''}>${l}</option>`).join('')}</select></span></div></td>`;
+                    loadCellHTML = `<td data-label="LOAD" style="text-align: left;"><div class="tag-select-wrapper"><span class="cell-tag" style="background-color:${bgColor}; color:${textColor}; text-align: left;">${loadDisplayText}<select class="load-select" style="color:${textColor};" onchange="handleLoadChange('${order.id_marketer_order}', this.value)"><option value="">${currentLoad ? 'Clear' : '-'}</option>${uniqueOpts.map(l => `<option value="${l}" ${currentLoad === l ? 'selected' : ''}>${l}</option>`).join('')}</select></span>${isDraggable ? gripHandleHTML : ''}</div></td>`;
                 }
                 
-                let isLoadDoneForPriority = false;
-                if (currentLoad && loadIsDoneCache[currentLoad] === undefined) {
-                    const ordersInLoad = allOrders.filter(o => state.loads[o.id_marketer_order] === currentLoad);
-                    loadIsDoneCache[currentLoad] = ordersInLoad.every(o => getPackingStatus(o) === 'done' || getPackingStatus(o) === 'shipped');
-                }
-                if (currentLoad) {
-                    isLoadDoneForPriority = loadIsDoneCache[currentLoad];
-                }
-                
-                // === INICIO: LÓGICA DE PRIORIDAD MODIFICADA ===
-                let priorityCellHTML;
-                const isPriorityDisabled = !unlockedColumns.priority || isLoadDoneForPriority || !currentLoad || isClosed || packingStatusValue === 'being_packed' || packingStatusValue === 'shipped';
-                
-                let capsuleContent = `<span>${currentPriority || '-'}</span>`;
-                if (currentPriority && currentPriority >= 1 && currentPriority <= 3) {
-                    const iconSVG = `<svg class="priority-icon p${currentPriority}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.034a.75.75 0 01.65.375l10 17.5a.75.75 0 01-.65 1.125H2a.75.75 0 01-.65-1.125l10-17.5A.75.75 0 0112 2.034zm0 1.466L3.03 19.5h17.94L12 3.5zM11.25 8.25a.75.75 0 011.5 0v6a.75.75 0 01-1.5 0v-6zm.75 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" fill-rule="evenodd"/></svg>`;
-                    capsuleContent = `<span>${currentPriority}</span>${iconSVG}`;
-                }
-
-                const noPriorityStyle = !currentPriority ? 'style="background-color: white; border-color: transparent;"' : '';
-
-                if (isPriorityDisabled) {
-                    priorityCellHTML = `<td data-label="PRIORITY"><div class="priority-capsule" ${noPriorityStyle}>${capsuleContent}</div></td>`;
-                } else {
-                    let optsHTML = `<option value="">-</option>`;
-                    for(let i=1; i<=maxPriority+1; i++) { 
-                        const taken = existingPriorities.includes(i) && i !== currentPriority;
-                        optsHTML += `<option value="${i}" ${currentPriority === i ? 'selected' : ''} ${taken ? 'disabled style="color:#ccc;"' : ''}>${i}${taken ? ' (taken)' : ''}</option>`;
-                    }
-                    const selectHTML = `<select class="priority-select" onchange="handlePriorityChange('${currentLoad}', this.value)">${optsHTML}</select>`;
-                    priorityCellHTML = `<td data-label="PRIORITY"><div class="priority-capsule" ${noPriorityStyle}>${capsuleContent}${selectHTML}</div></td>`;
-                }
-                // === FIN: LÓGICA DE PRIORIDAD MODIFICADA ===
-
-                const hoy = DateTime.now().startOf('day');
-                const shipDateObj = DateTime.fromFormat(order.fecha_envio, dateFormat).startOf('day');
-                let shipDateCell;
-                if (shipDateObj.isValid) {
-                    let contentHTML = `<span class="date-text">${order.fecha_envio}</span>`;
-                    if (shipDateObj < hoy) {
-                        shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator"><span class="symbol">&lsaquo;</span>${contentHTML}</div></td>`;
-                    } else if (shipDateObj.hasSame(hoy, 'day')) {
-                        shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator">${contentHTML}</div></td>`;
-                    } else {
-                        shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator">${contentHTML}<span class="symbol">&rsaquo;</span></div></td>`;
-                    }
-                } else {
-                    shipDateCell = `<td data-label="SHIP DATE">${order.fecha_envio}</td>`;
-                }
-                const marketerName = order.marketer;
-                const logoFile = logoMap[marketerName];
-                let marketerCellHTML;
-                if (showLogos && logoFile) {
-                    marketerCellHTML = `<td data-label="MARKETER" style="text-align:center;"><img src="/logos/${logoFile}" class="client-logo" alt="${marketerName}" onerror="this.outerHTML = '<span>${marketerName}</span>'"></td>`;
-                } else {
-                    marketerCellHTML = `<td data-label="MARKETER" style="text-align:center;">${marketerName}</td>`;
-                }
-                let percentCell = '<td data-label="%"></td>';
-                if (reqN > 0) {
-                    const pct = Math.min(100, Math.round(((assN + shipN) / reqN) * 100));
-                    percentCell = `<td data-label="%">${createDonutChart(pct)}</td>`;
-                }
+                const isLoadDoneForPriority = loadIsDoneCache[currentLoad] || false;
+                let priorityCellHTML; const isPriorityDisabled = !unlockedColumns.priority || isLoadDoneForPriority || !currentLoad || ['BEING PACKED', 'SHIPPED', 'DONE'].includes(packingStatusValue);
+                let capsuleContent = `<span>${state.priorities[currentLoad] || '-'}</span>`; if (state.priorities[currentLoad] && state.priorities[currentLoad] >= 1 && state.priorities[currentLoad] <= 3) { const iconSVG = `<svg class="priority-icon p${state.priorities[currentLoad]}" viewBox="0 0 24 24"><path d="M12 2.034a.75.75 0 01.65.375l10 17.5a.75.75 0 01-.65 1.125H2a.75.75 0 01-.65-1.125l10-17.5A.75.75 0 0112 2.034zm0 1.466L3.03 19.5h17.94L12 3.5zM11.25 8.25a.75.75 0 011.5 0v6a.75.75 0 01-1.5 0v-6zm.75 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" fill-rule="evenodd"/></svg>`; capsuleContent = `<span>${state.priorities[currentLoad]}</span>${iconSVG}`; }
+                const noPriorityStyle = !state.priorities[currentLoad] ? 'style="background-color: white; border-color: transparent;"' : '';
+                if (isPriorityDisabled) { priorityCellHTML = `<td data-label="PRIORITY"><div class="priority-capsule" ${noPriorityStyle}>${capsuleContent}</div></td>`; } else { let optsHTML = `<option value="">-</option>`; for(let i=1; i<=maxPriority+1; i++) { const taken = existingPriorities.includes(i) && i !== state.priorities[currentLoad]; optsHTML += `<option value="${i}" ${state.priorities[currentLoad] === i ? 'selected' : ''} ${taken ? 'disabled style="color:#ccc;"' : ''}>${i}${taken ? ' (taken)' : ''}</option>`; } const selectHTML = `<select class="priority-select" onchange="handlePriorityChange('${currentLoad}', this.value)">${optsHTML}</select>`; priorityCellHTML = `<td data-label="PRIORITY"><div class="priority-capsule" ${noPriorityStyle}>${capsuleContent}${selectHTML}</div></td>`; }
+                const hoy = DateTime.now().startOf('day'); const shipDateObj = DateTime.fromFormat(order.fecha_envio, dateFormat).startOf('day'); let shipDateCell; if (shipDateObj.isValid) { let contentHTML = `<span class="date-text">${order.fecha_envio}</span>`; if (shipDateObj < hoy) { shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator"><span class="symbol">&lsaquo;</span>${contentHTML}</div></td>`; } else if (shipDateObj.hasSame(hoy, 'day')) { shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator">${contentHTML}</div></td>`; } else { shipDateCell = `<td data-label="SHIP DATE"><div class="date-indicator">${contentHTML}<span class="symbol">&rsaquo;</span></div></td>`; } } else { shipDateCell = `<td data-label="SHIP DATE">${order.fecha_envio}</td>`; }
+                const marketerName = order.marketer; const logoFile = logoMap[marketerName]; let marketerCellHTML; if (showLogos && logoFile) { marketerCellHTML = `<td data-label="MARKETER" style="text-align:center;"><img src="/logos/${logoFile}" class="client-logo" alt="${marketerName}" onerror="this.outerHTML = '<span>${marketerName}</span>'"></td>`; } else { marketerCellHTML = `<td data-label="MARKETER" style="text-align:center;">${marketerName}</td>`; }
+                let percentCell = '<td data-label="%"></td>'; if (reqN > 0) { const pct = Math.min(100, Math.round(((assN + shipN) / reqN) * 100)); percentCell = `<td data-label="%">${createDonutChart(pct)}</td>`; }
                 const organicIcon = order.formacion && order.formacion.toLowerCase().includes('organic') ? '🌿 ' : '';
-                
-                const current_cxp = parseFloat(order.cajas_por_pallet) || 1;
-                let availBoxesText = `${availB}`;
-                if (availB > 0 && availB < current_cxp) {
-                    const needed = current_cxp - availB;
-                    availBoxesText = `${availB} (${needed})`;
-                }
-                
-                const packStyleHTML = `${order.descripcion}<br><span class="pack-style-id">(${order.codigo_producto})</span>`;
-                const orderNumberHTML = `${order.order_number}<br><span class="order-id-subtext">(${order.id_marketer_order})</span>`;
-                const labelText = (order.label || '').replace(/organic/ig, '').trim();
-                return `<tr>
-                    <td data-label="COMMERCIAL STATUS"><span class="status status-${isClosed ? 'closed' : 'open'}">${isClosed ? 'CLOSED' : 'OPEN'}</span></td>
-                    ${packingStatusCellHTML}
-                    ${lineCellHTML}
-                    ${priorityCellHTML}
-                    ${loadCellHTML}
-                    ${shipDateCell}
-                    ${marketerCellHTML}
-                    <td data-label="ORDER NUMBER" style="text-align:left;">${orderNumberHTML}</td>
-                    <td data-label="PACK STYLE" style="text-align:left;">${packStyleHTML}</td>
-                    <td data-label="LABEL" style="text-align:left;">${labelText}</td>
-                    <td data-label="PRODUCTION METHOD" style="text-align:left;">${organicIcon}${order.formacion || ''}</td>
-                    ${percentCell}
-                    <td class="numeric-cell" data-label="REQUEST"><span class="numeric-value">${reqN.toFixed(2)}</span></td>
-                    <td class="numeric-cell" data-label="ASSIGNED"><span class="numeric-value">${assN.toFixed(2)}</span></td>
-                    <td class="numeric-cell" data-label="PENDING"><span class="numeric-value pending">${pendN.toFixed(2)}</span></td>
-                    <td class="numeric-cell" data-label="BALANCE POUND"><span class="numeric-value">${balP.toLocaleString('en-US',{maximumFractionDigits:0})}</span></td>
-                    <td class="numeric-cell col-availability" data-label="AVAILABLE PALLETS">${availP > 0 ? `<span class="numeric-capsule">${availP}</span>` : `<span class="numeric-value">${availP}</span>`}</td>
-                    <td class="numeric-cell col-availability" data-label="AVAILABLE BOXES">${availB > 0 ? `<span class="numeric-capsule">${availBoxesText}</span>` : `<span class="numeric-value">${availBoxesText}</span>`}</td>
-                    <td class="numeric-cell" data-label="SHIPPED"><span class="numeric-value">${shipN.toFixed(2)}</span></td>
-                    <td class="col-price numeric-cell" data-label="PRICE">$${(parseFloat(order.precio) || 0).toFixed(2)}</td>
-                    <td class="col-receiver" style="text-align:left;" data-label="RECEIVER">${order.recibidor}</td>
-                    <td class="col-address" data-label="ADDRESS"><a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent('2460 Wildwood RD Curtis WA 98538')}&destination=${encodeURIComponent(order.direccion_recibidor)}" target="_blank" class="address-link">${order.direccion_recibidor}</a></td>
-                    <td class="col-boxes-pallet numeric-cell" data-label="BOXES/PALLET">${order.cajas_por_pallet}</td>
-                    <td class="col-pound-box numeric-cell" data-label="LBS/BOX">${order.peso_por_caja}</td>
-                </tr>`;
+                const current_cxp = parseFloat(order.cajas_por_pallet) || 1; let availBoxesText = `${availB}`; if (availB > 0 && availB < current_cxp) { const needed = current_cxp - availB; availBoxesText = `${availB} (${needed})`; }
+                const packStyleHTML = `${order.descripcion}<br><span class="pack-style-id">(${order.codigo_producto})</span>`; const orderNumberHTML = `${order.order_number}<br><span class="order-id-subtext">(${order.id_marketer_order})</span>`; const labelText = (order.label || '').replace(/organic/ig, '').trim();
+                return `<tr data-order-id="${order.id_marketer_order}" data-standard-id="${order.codigo_producto}"><td data-label="COMMERCIAL STATUS"><span class="status status-${isClosed ? 'closed' : 'open'}">${order.commercialStatus}</span></td> ${packingStatusCellHTML} ${outfeedCellHTML} ${priorityCellHTML} ${loadCellHTML} ${shipDateCell} ${marketerCellHTML} <td data-label="ORDER NUMBER" style="text-align:left;">${orderNumberHTML}</td> <td data-label="PACK STYLE" style="text-align:left;">${packStyleHTML}</td> <td data-label="LABEL" style="text-align:left;">${labelText}</td> <td data-label="PRODUCTION METHOD" style="text-align:left;">${organicIcon}${order.formacion || ''}</td> <td class="col-price numeric-cell" data-label="PRICE">$${(parseFloat(order.precio) || 0).toFixed(2)}</td> ${percentCell} <td class="numeric-cell" data-label="REQUEST"><span class="numeric-value">${reqN.toFixed(2)}</span></td> <td class="numeric-cell" data-label="ASSIGNED"><span class="numeric-value">${assN.toFixed(2)}</span></td> <td class="numeric-cell" data-label="PENDING"><span class="numeric-value pending">${pendN.toFixed(2)}</span></td> <td class="col-balance-pound numeric-cell" data-label="BALANCE POUND"><span class="numeric-value">${balP.toLocaleString('en-US',{maximumFractionDigits:0})}</span></td> <td class="numeric-cell col-availability" data-label="AVAILABLE PALLETS">${availP > 0 ? `<span class="numeric-capsule">${availP}</span>` : `<span class="numeric-value">${availP}</span>`}</td> <td class="numeric-cell col-availability" data-label="AVAILABLE BOXES">${availB > 0 ? `<span class="numeric-capsule">${availBoxesText}</span>` : `<span class="numeric-value">${availBoxesText}</span>`}</td> <td class="numeric-cell" data-label="SHIPPED"><span class="numeric-value">${shipN.toFixed(2)}</span></td> <td class="col-receiver" style="text-align:left;" data-label="RECEIVER">${order.recibidor}</td> <td class="col-address" data-label="ADDRESS"><a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent('2460 Wildwood RD Curtis WA 98538')}&destination=${encodeURIComponent(order.direccion_recibidor)}" target="_blank" class="address-link">${order.direccion_recibidor}</a></td> <td class="col-boxes-pallet numeric-cell" data-label="BOXES/PALLET">${order.cajas_por_pallet}</td> <td class="col-pound-box numeric-cell" data-label="LBS/BOX">${order.peso_por_caja}</td></tr>`;
             }).join('');
 
-            tableContainer.innerHTML = `<div class="table-wrapper"><table><thead><tr>
-                <th>COMMERCIAL<br>STATUS</th><th>PACKING<br>STATUS</th><th>OUTFEED</th><th>PRIORITY</th><th>LOAD</th><th>SHIP<br>DATE</th>
-                <th>MARKETER</th><th>ORDER<br>NUMBER</th><th>PACK<br>STYLE</th><th>LABEL</th><th>PRODUCTION<br>METHOD</th><th>%</th>
-                <th>REQUEST</th><th>ASSIGNED</th><th>PENDING</th><th>BALANCE<br>POUND</th><th class="col-availability">AVAILABLE<br>PALLETS</th><th class="col-availability">AVAILABLE<br>BOXES</th><th>SHIPPED</th>
-                <th class="col-price">PRICE</th><th class="col-receiver">RECEIVER</th><th class="col-address">ADDRESS</th><th class="col-boxes-pallet">BOXES<br>PALLET</th><th class="col-pound-box">LBS<br>BOX</th>
-            </tr></thead><tbody>${totalsRowHTML}${dataRowsHTML}</tbody></table></div>`;
-            
+            const createHeaderBtn = (id, text) => `<button class="header-filter-btn" id="${id}-filter-btn"><span>${text.replace('<br>', ' ')}</span><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>`;
+            const marketerHeaderHTML = `<div class="th-with-checkbox">${createHeaderBtn('marketer', 'MARKETER')} <input type="checkbox" id="showLogosCheckboxHeader" ${showLogos ? 'checked' : ''}></div>`;
+            const headers = {
+                commercialStatus: `<th>${createHeaderBtn('commercial-status', 'COMMERCIAL<br>STATUS')}</th>`,
+                packingStatus: `<th>${createHeaderBtn('packing-status', 'PACKING<br>STATUS')}</th>`,
+                outfeed: '<th>OUTFEED</th>', priority: '<th>PRIORITY</th>',
+                load: `<th>${createHeaderBtn('load', 'LOAD')}</th>`,
+                shipDate: `<th>${createHeaderBtn('ship-date', 'SHIP<br>DATE')}</th>`,
+                marketer: `<th>${marketerHeaderHTML}</th>`,
+                orderNumber: `<th>${createHeaderBtn('order-number', 'ORDER<br>NUMBER')}</th>`,
+                packStyle: `<th>${createHeaderBtn('pack-style', 'PACK<br>STYLE')}</th>`,
+                label: `<th>${createHeaderBtn('label', 'LABEL')}</th>`,
+                productionMethod: `<th>${createHeaderBtn('production-method', 'PRODUCTION<br>METHOD')}</th>`,
+                price: '<th class="col-price">PRICE</th>', '%': '<th>%</th>', request: '<th>REQUEST</th>', assigned: '<th>ASSIGNED</th>', pending: '<th>PENDING</th>', 
+                balancePound: '<th class="col-balance-pound">BALANCE<br>POUND</th>',
+                availablePallets: '<th class="col-availability">AVAILABLE<br>PALLETS</th>', availableBoxes: '<th class="col-availability">AVAILABLE<br>BOXES</th>', shipped: '<th>SHIPPED</th>',
+                receiver: `<th class="col-receiver">${createHeaderBtn('receiver', 'RECEIVER')}</th>`,
+                address: '<th class="col-address">ADDRESS</th>', boxesPallet: '<th class="col-boxes-pallet">BOXES<br>PALLET</th>', poundBox: '<th class="col-pound-box">LBS<br>BOX</th>'
+            };
+            const tableHTML = `<div class="table-wrapper"><table><thead><tr>${Object.values(headers).join('')}</tr></thead><tbody>${totalsRowHTML}${dataRowsHTML}</tbody></table></div>`;
+            tableContainer.innerHTML = tableHTML;
+
+            const showLogosCheckboxHeader = document.getElementById('showLogosCheckboxHeader');
+            if (showLogosCheckboxHeader) {
+                showLogosCheckboxHeader.addEventListener('change', (e) => {
+                    showLogos = e.target.checked;
+                    applyFiltersAndRender();
+                });
+            }
+
+            for (const [key, config] of Object.entries(columnFilterConfig)) {
+                const btn = document.getElementById(`${key}-filter-btn`);
+                if (btn) {
+                    btn.classList.toggle('active', config.set.size > 0);
+                }
+            }
+
             const tableBody = tableContainer.querySelector('tbody');
             if (tableBody) {
-                tableBody.addEventListener('click', (e) => {
-                    const lineBtn = e.target.closest('.multiselect-btn');
-                    if (lineBtn && lineBtn.id.startsWith('line-btn-')) {
-                        if (!unlockedColumns.line) return; 
+                tableBody.addEventListener('click', (e) => { const btn = e.target.closest('.multiselect-btn'); if (btn) { if (!unlockedColumns.outfeed) return; e.stopPropagation(); const content = btn.nextElementSibling; document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => { if(c !== content) c.style.display = 'none'; }); content.style.display = content.style.display === 'block' ? 'none' : 'block'; } });
+                tableBody.addEventListener('change', (e) => { const checkbox = e.target; if (checkbox.type === 'checkbox' && checkbox.closest('.multiselect-content')) { handleOutfeedChange(checkbox); } });
+            }
+            
+            for (const key of Object.keys(columnFilterConfig)) {
+                const btn = document.getElementById(`${key}-filter-btn`);
+                if (btn) {
+                    btn.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        const content = lineBtn.nextElementSibling;
-                        document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => { if(c !== content) c.style.display = 'none'; });
-                        content.style.display = content.style.display === 'block' ? 'none' : 'block';
-                    }
-                });
+                        showColumnFilterPopup(e.currentTarget, key);
+                    });
+                }
+            }
+            setupTableDragAndDrop();
+        }
+        
+        async function handlePrint() {
+            printModal.overlay.style.display = 'none';
+            const isDesigned = printModal.designedCheckbox.checked;
+            const timeframeValue = printModal.periodSelect.value;
+        
+            let reportData = allOrders.map(o => ({...o, load: state.loads[o.id_marketer_order] || '', priority: state.priorities[state.loads[o.id_marketer_order]] || null }));
 
-                tableBody.addEventListener('change', (e) => {
-                    const checkbox = e.target;
-                    if (checkbox.type === 'checkbox' && checkbox.closest('.multiselect-content')) {
-                        const content = checkbox.closest('.multiselect-content');
-                        const row = checkbox.closest('tr');
-                        const orderIdCell = row.querySelector('[data-label="ORDER NUMBER"] .order-id-subtext');
-                        const orderId = orderIdCell.textContent.replace(/[()]/g, '');
-                        const packStyleCell = row.querySelector('[data-label="PACK STYLE"] .pack-style-id');
-                        const standardId = packStyleCell.textContent.replace(/[()]/g, '');
-                        const selectedLines = Array.from(content.querySelectorAll('input:checked')).map(cb => cb.value);
-                        handleLineChange(orderId, standardId, selectedLines);
+            if (timeframeValue && timeframeValue !== 'all_time' && timeframeValue !== 'all_status_all_time') {
+                const now = DateTime.now().startOf('day');
+                reportData = reportData.filter(o => {
+                    const orderDate = DateTime.fromFormat(o.fecha_envio, dateFormat).startOf('day');
+                    if (!orderDate.isValid) return false;
+                    switch (timeframeValue) {
+                        case 'today_past': return orderDate <= now;
+                        case 'today_future': return orderDate >= now;
+                        case 'through_tomorrow': return orderDate <= now.plus({ days: 1 });
+                        case 'tomorrow': return orderDate.hasSame(now.plus({ days: 1 }), 'day');
+                        case 'this_week': return orderDate.hasSame(now, 'week');
+                        case 'next_week': return orderDate.hasSame(now.plus({ weeks: 1 }), 'week');
+                        default:
+                            if (timeframeValue.startsWith('20')) {
+                                const [y, w] = timeframeValue.split('-W');
+                                return orderDate.weekYear === parseInt(y) && orderDate.weekNumber === parseInt(w);
+                            }
+                            return true;
                     }
                 });
             }
+
+            reportData = reportData.filter(o => o.estado_marketer_order === 'activa');
+            
+            reportData.forEach(order => {
+                let outfeedDisplay = '', tagDisplay = '';
+                for (const outfeedId in state.planningState.queues) {
+                    const itemInQueue = state.planningState.queues[outfeedId].find(item => item.order_id == order.id_marketer_order && item.standard_id == order.codigo_producto);
+                    if (itemInQueue) {
+                        outfeedDisplay = `OUTFEED ${outfeedId}`;
+                        tagDisplay = itemInQueue.tag;
+                        break; 
+                    }
+                }
+                order.outfeed = outfeedDisplay;
+                order.tag = tagDisplay;
+            });
+            
+            reportData.sort((a, b) => {
+                const prioA = a.priority ?? 999;
+                const prioB = b.priority ?? 999;
+                if (prioA !== prioB) return prioA - prioB;
+
+                const marketerA = a.marketer || ''; const marketerB = b.marketer || '';
+                if (marketerA.localeCompare(marketerB) !== 0) return marketerA.localeCompare(marketerB);
+                
+                const loadA = a.tag || a.load || 'ZZZ'; const loadB = b.tag || b.load || 'ZZZ';
+                if (loadA.localeCompare(loadB) !== 0) return loadA.localeCompare(loadB);
+
+                const dateA = DateTime.fromFormat(a.fecha_envio, dateFormat); const dateB = DateTime.fromFormat(b.fecha_envio, dateFormat);
+                if (dateA.isValid && dateB.isValid && dateA.toMillis() !== dateB.toMillis()) return dateA - dateB;
+                
+                const orderA = a.order_number || ''; const orderB = b.order_number || '';
+                if (orderA.localeCompare(orderB) !== 0) return orderA.localeCompare(orderB, undefined, { numeric: true });
+
+                const packA = a.descripcion || ''; const packB = b.descripcion || '';
+                if (packA.localeCompare(packB) !== 0) return packA.localeCompare(packB);
+
+                const labelA = a.label || ''; const labelB = b.label || '';
+                if (labelA.localeCompare(labelB) !== 0) return labelA.localeCompare(labelB);
+
+                const methodA = a.formacion || ''; const methodB = b.formacion || '';
+                return methodA.localeCompare(methodB);
+            });
+
+            const doc = new jsPDF({ orientation: 'landscape' });
+            doc.setFont('helvetica', 'normal');
+            
+            const head = [['MARKETER', 'OUTFEED', 'PRIORITY', 'LOAD', 'SHIP DATE', 'ORDER', 'PACK STYLE', 'LABEL', 'PROD. METHOD', '%', 'REQ', 'DONE', 'PEND']];
+            const totals = { req: 0, done: 0, pend: 0 };
+            let imagesToLoad = {};
+        
+            if (isDesigned) {
+                reportData.forEach(order => {
+                    const logoFile = logoMap[order.marketer];
+                    if (logoFile) { imagesToLoad[order.marketer] = `/logos/${logoFile}`; }
+                });
+            }
+
+            const preloadedImages = await preloadImages(imagesToLoad);
+
+            const body = reportData.map(order => {
+                const reqC = parseFloat(order.cantidad_solicitada) || 0, assC = parseFloat(order.cantidad_asignada) || 0, shipC = parseFloat(order.cantidad_despachada) || 0, cxp = parseFloat(order.cajas_por_pallet) || 1;
+                const reqN = reqC / cxp, doneN = (assC + shipC) / cxp, pendN = reqN - doneN;
+                const percentage = reqN > 0 ? Math.min(100, Math.round(doneN / reqN * 100)) : 0;
+                
+                totals.req += reqN;
+                totals.done += doneN;
+                totals.pend += pendN;
+
+                let marketerCell = order.marketer;
+                if (isDesigned && preloadedImages[order.marketer]) { marketerCell = ''; }
+
+                const loadValue = order.tag || order.load || '';
+
+                return [
+                    marketerCell, order.outfeed || '', order.priority || '', loadValue, order.fecha_envio,
+                    order.order_number, order.descripcion, (order.label || '').replace(/organic/ig, '').trim(),
+                    order.formacion || '', `${percentage}%`, reqN.toFixed(2), doneN.toFixed(2), pendN.toFixed(2)
+                ];
+            });
+
+            body.push([
+                { content: 'TOTALS', colSpan: 10, styles: { halign: 'right', fontStyle: 'bold' } },
+                { content: totals.req.toFixed(2), styles: { halign: 'right', fontStyle: 'bold' } },
+                { content: totals.done.toFixed(2), styles: { halign: 'right', fontStyle: 'bold' } },
+                { content: totals.pend.toFixed(2), styles: { halign: 'right', fontStyle: 'bold' } }
+            ]);
+        
+            const mainLogoImg = document.getElementById('app-logo');
+            const logoHeight = 12 * 1.3;
+            const logoWidth = (mainLogoImg.naturalWidth * logoHeight) / mainLogoImg.naturalHeight;
+            let totalPagesExp = '{totalPages}';
+            const topMargin = 30;
+
+            doc.autoTable({
+                head: head, body: body, startY: topMargin,
+                margin: { left: 14.17, right: 14.17 },
+                didDrawPage: (data) => {
+                    if (data.pageNumber === 1) {
+                        const headerYPos = topMargin / 2;
+                        doc.addImage(mainLogoImg, 'PNG', data.settings.margin.left, headerYPos - (logoHeight / 2), logoWidth, logoHeight, '', 'FAST');
+                        doc.setFontSize(20); doc.text('Packing Schedule', data.settings.margin.left + logoWidth + 5, headerYPos, { baseline: 'middle' });
+                    }
+                    
+                    doc.setFontSize(10);
+                    doc.text(`Generated on: ${DateTime.now().toFormat('MM/dd/yyyy hh:mm a')}`, doc.internal.pageSize.getWidth() - data.settings.margin.right, topMargin - 5, { align: 'right' });
+
+                    const pageNum = 'Page ' + doc.internal.getNumberOfPages();
+                    const pageStr = pageNum + ' of ' + totalPagesExp;
+                    doc.setFontSize(10);
+                    doc.text(pageStr, data.settings.margin.left, doc.internal.pageSize.height - 10);
+                    
+                    doc.setFontSize(8);
+                    doc.text('Desing & Development by Mentes Inquietas 2025', doc.internal.pageSize.width - data.settings.margin.right, doc.internal.pageSize.height - 10, { align: 'right' });
+                },
+                didDrawCell: (data) => {
+                    if (isDesigned && data.section === 'body' && data.row.index < reportData.length) {
+                        const rowData = reportData[data.row.index];
+                        if (!rowData) return;
+
+                        if (data.column.index === 0) {
+                            const marketerName = rowData.marketer;
+                            const img = preloadedImages[marketerName];
+                            if (img) {
+                                const cellHeight = data.cell.height;
+                                // CORREGIDO: Lógica de escalado de imagen para respetar la altura de la fila
+                                const imgMaxHeight = cellHeight * 0.9; // Usar 90% de la altura para dejar margen
+                                let imgHeight = imgMaxHeight;
+                                let imgWidth = (img.width * imgHeight) / img.height;
+                                const maxWidth = data.cell.width - 2;
+                                if (imgWidth > maxWidth) {
+                                    imgWidth = maxWidth;
+                                    imgHeight = (img.height * imgWidth) / img.width;
+                                }
+                                const x = data.cell.x + (data.cell.width - imgWidth) / 2;
+                                const y = data.cell.y + (cellHeight - imgHeight) / 2;
+                                doc.addImage(img, 'PNG', x, y, imgWidth, imgHeight);
+                            }
+                        }
+                    }
+                },
+                styles: { fontSize: 8, cellPadding: 2, valign: 'middle', font: 'helvetica' },
+                headStyles: { fillColor: [45, 45, 45], textColor: 255, fontStyle: 'normal', halign: 'center' },
+                // MODIFICADO: Alineación de columnas a la izquierda
+                columnStyles: {
+                    0: { halign: 'center' }, 1: { halign: 'center' }, 2: { halign: 'center' },
+                    3: { halign: 'center' }, 4: { halign: 'center' }, 
+                    5: { halign: 'left' }, 6: { halign: 'left' }, 7: { halign: 'left' }, 8: { halign: 'left' },
+                    9: { halign: 'right' }, 10: { halign: 'right' }, 11: { halign: 'right' },
+                    12: { halign: 'right' }
+                },
+                // MODIFICADO: Altura de fila duplicada para más espacio
+                minCellHeight: 24
+            });
+
+            if (typeof doc.putTotalPages === 'function') {
+                doc.putTotalPages(totalPagesExp);
+            }
+            
+            const pdfBlob = doc.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+            URL.revokeObjectURL(pdfUrl);
+        }
+
+        function preloadImages(sources) {
+            return new Promise((resolve) => {
+                const images = {};
+                const keys = Object.keys(sources);
+                if (keys.length === 0) { resolve(images); return; }
+                let loadedCount = 0;
+                keys.forEach(key => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        images[key] = img;
+                        loadedCount++;
+                        if (loadedCount === keys.length) { resolve(images); }
+                    };
+                    img.onerror = () => {
+                        loadedCount++;
+                        if (loadedCount === keys.length) { resolve(images); }
+                    };
+                    img.src = sources[key];
+                });
+            });
         }
         
-        // ========== EVENT LISTENERS & INITIALIZATION ==========
+        function showColumnFilterPopup(targetElement, filterKey) {
+            const config = columnFilterConfig[filterKey];
+            if (!config) return;
+
+            let baseData = getCurrentFilteredData();
+            
+            const uniqueValues = [...new Set(baseData.map(o => String(o[config.dataKey])).filter(Boolean))].sort((a, b) => {
+                if (filterKey === 'ship-date') {
+                    const dateA = DateTime.fromFormat(a, dateFormat);
+                    const dateB = DateTime.fromFormat(b, dateFormat);
+                    if (dateA.isValid && dateB.isValid) return dateA - dateB;
+                }
+                return String(a).localeCompare(String(b), undefined, { numeric: true });
+            });
+            
+            filterPopup.body.innerHTML = '';
+            uniqueValues.forEach(value => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = value;
+                checkbox.checked = config.set.has(value);
+                label.appendChild(checkbox);
+                label.append(` ${value}`);
+                filterPopup.body.appendChild(label);
+            });
+        
+            const itemCheckboxes = Array.from(filterPopup.body.querySelectorAll('input[type="checkbox"]'));
+        
+            filterPopup.search.value = '';
+            filterPopup.search.oninput = (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                itemCheckboxes.forEach(cb => { cb.parentElement.style.display = cb.parentElement.textContent.toLowerCase().includes(searchTerm) ? '' : 'none'; });
+            };
+        
+            filterPopup.applyBtn.onclick = () => {
+                config.set.clear();
+                itemCheckboxes.forEach(cb => { if (cb.checked) { config.set.add(cb.value); } });
+                closeFilterPopup();
+                applyFiltersAndRender();
+            };
+            filterPopup.cancelBtn.onclick = () => { closeFilterPopup(); };
+            filterPopup.clearBtn.onclick = () => {
+                itemCheckboxes.forEach(cb => cb.checked = false);
+            };
+
+            const rect = targetElement.getBoundingClientRect();
+            filterPopup.element.style.display = 'block';
+            filterPopup.element.style.top = `${rect.bottom}px`;
+            filterPopup.element.style.left = `${rect.left}px`;
+            filterPopup.search.focus();
+        }
+
+        function closeFilterPopup() { filterPopup.element.style.display = 'none'; }
+        
         function setupEventListeners() {
             document.getElementById('timerBtn').addEventListener('click', () => { if (timerRunning) stopTimer(); else startTimer(); });
+            document.getElementById('updateBtn').addEventListener('click', async () => { const btn = document.getElementById('updateBtn'), svg = btn.querySelector('svg'); btn.disabled = true; svg.classList.add('spinning'); try { await refreshData(); } catch (error) { console.error("Ocurrió un error durante la actualización de datos:", error); } finally { svg.classList.remove('spinning'); btn.disabled = false; } });
             
-            const updateButton = document.getElementById('updateBtn');
-            updateButton.addEventListener('click', () => {
-                const svg = updateButton.querySelector('svg');
-                svg.classList.add('spinning');
-                refreshData();
-                svg.addEventListener('animationend', () => {
-                    svg.classList.remove('spinning');
-                }, { once: true });
-            });
-            
-            document.getElementById('showLogosCheckbox').addEventListener('change', (e) => {
-                showLogos = e.target.checked;
-                applyFiltersAndRender();
-            });
-
-            document.getElementById('setLineBtn').addEventListener('click', () => handleAuthAction('line'));
-            document.getElementById('setPriorityBtn').addEventListener('click', () => handleAuthAction('priority'));
-            document.getElementById('setLoadBtn').addEventListener('click', () => handleAuthAction('load'));
-            document.getElementById('setAllBtn').addEventListener('click', () => handleAuthAction('all'));
+            document.getElementById('setScheduleBtn').addEventListener('click', () => handleAuthAction('schedule'));
+            document.getElementById('setOutfeedBtn').addEventListener('click', () => handleAuthAction('outfeed')); 
+            document.getElementById('setPriorityBtn').addEventListener('click', () => handleAuthAction('priority')); 
+            document.getElementById('setLoadBtn').addEventListener('click', () => handleAuthAction('load')); 
+            document.getElementById('setAllBtn').addEventListener('click', () => handleAuthAction('all')); 
             document.getElementById('togglePriceBtn').addEventListener('click', () => handleToggleAuth('price'));
             
-            document.getElementById('toggle-panel-btn').addEventListener('click', () => {
-                document.body.classList.toggle('controls-collapsed');
-            });
-
-            function setupToggleButton(btnId, className, defaultText) {
-                 const btn = document.getElementById(btnId);
-                 btn.addEventListener('click', (e) => {
-                    document.body.classList.toggle(className);
-                    e.target.textContent = e.target.textContent.startsWith('Show') ? `Hide ${defaultText}` : `Show ${defaultText}`;
-                    e.target.classList.toggle('active');
-                 });
-            }
-            setupToggleButton('toggleAddressBtn', 'show-address', 'Address');
-            setupToggleButton('toggleReceiverBtn', 'show-receiver', 'Receiver');
-            setupToggleButton('toggleAvailabilityBtn', 'show-availability', 'Availability');
-            setupToggleButton('toggleBoxesPalletBtn', 'show-boxes-pallet', 'Boxes/Pallet');
+            document.getElementById('toggle-panel-btn').addEventListener('click', (e) => { document.body.classList.toggle('controls-collapsed'); });
+            function setupToggleButton(btnId, className, defaultText) { const btn = document.getElementById(btnId); btn.addEventListener('click', (e) => { document.body.classList.toggle(className); e.target.textContent = e.target.textContent.startsWith('Show') ? `Hide ${defaultText}` : `Show ${defaultText}`; e.target.classList.toggle('active'); applyFiltersAndRender(); }); }
+            setupToggleButton('toggleAddressBtn', 'show-address', 'Address'); 
+            setupToggleButton('toggleReceiverBtn', 'show-receiver', 'Receiver'); 
+            setupToggleButton('toggleAvailabilityBtn', 'show-availability', 'Availability'); 
+            setupToggleButton('toggleBoxesPalletBtn', 'show-boxes-pallet', 'Boxes/Pallet'); 
             setupToggleButton('togglePoundBoxBtn', 'show-pound-box', 'Lbs/Box');
-            
-            Object.values(filters).forEach(filter => filter.addEventListener('change', applyFiltersAndRender));
-            const shipDateBtn = document.getElementById('shipDateFilterBtn');
-            const shipDateContent = document.getElementById('shipDateFilterContent');
-            shipDateBtn.addEventListener('click', (e) => { e.stopPropagation(); shipDateContent.style.display = shipDateContent.style.display === 'block' ? 'none' : 'block'; });
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.multiselect-filter')) shipDateContent.style.display = 'none';
-                if (!e.target.closest('.multiselect-cell')) {
-                    document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => c.style.display = 'none');
+            setupToggleButton('toggleBalancePoundBtn', 'show-balance-pound', 'Balance Pound');
+
+            timeframeFilter.addEventListener('change', () => {
+                for (const config of Object.values(columnFilterConfig)) {
+                    config.set.clear();
                 }
-            });
-            document.getElementById('defaultFiltersBtn').addEventListener('click', () => {
-                filters.commercialStatus.value = 'open'; filters.packingStatus.value = 'all'; filters.timeframe.value = 'today_past';
-                selectedShipDates.clear();
-                Object.keys(filters).forEach(k => { if (!['commercialStatus', 'packingStatus', 'timeframe'].includes(k)) filters[k].value = 'all'; });
                 applyFiltersAndRender();
             });
-        }
-        function populateShipDateFilter(data) {
-            const content = document.getElementById('shipDateFilterContent');
-            const dates = Array.from(new Set(data.map(o => o.fecha_envio))).sort((a,b) => DateTime.fromFormat(a, dateFormat) - DateTime.fromFormat(b, dateFormat));
-            content.innerHTML = '';
-            const allLabel = document.createElement('label'); const allCB = document.createElement('input'); allCB.type = 'checkbox'; allCB.checked = selectedShipDates.size === 0;
-            allCB.onchange = (e) => { if(e.target.checked) { selectedShipDates.clear(); content.querySelectorAll('input').forEach(cb => { if (cb !== allCB) cb.checked = false; }); } updateShipDateButtonText(); applyFiltersAndRender(); };
-            allLabel.append(allCB, ' (Select All)'); content.appendChild(allLabel);
-            dates.forEach(date => { const label = document.createElement('label'), cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = date; cb.checked = selectedShipDates.has(date);
-                cb.onchange = (e) => { if (e.target.checked) selectedShipDates.add(date); else selectedShipDates.delete(date); content.querySelector('input').checked = selectedShipDates.size === 0; updateShipDateButtonText(); applyFiltersAndRender(); };
-                label.append(cb, ` ${date}`); content.appendChild(label);
+
+            document.addEventListener('click', (e) => { 
+                if (!e.target.closest('.multiselect-cell')) { document.querySelectorAll('.multiselect-cell .multiselect-content').forEach(c => c.style.display = 'none'); }
+                if (!e.target.closest('.filter-popup') && !e.target.closest('.header-filter-btn')) { closeFilterPopup(); }
+                if (e.target.closest('.outfeed-status-toggle')) {
+                    const button = e.target.closest('.outfeed-status-toggle');
+                    const outfeedId = button.dataset.outfeedId;
+                    const newStatus = button.classList.contains('running') ? 'PAUSED' : 'RUNNING';
+                    apiCall('/api/outfeed-status', 'POST', { outfeedId, status: newStatus }).then(refreshData);
+                }
             });
-            updateShipDateButtonText();
+
+            document.getElementById('defaultFiltersBtn').addEventListener('click', () => { 
+                for (const config of Object.values(columnFilterConfig)) {
+                    config.set.clear();
+                }
+                timeframeFilter.value = 'today_past';
+                applyFiltersAndRender();
+            });
+            printModal.printBtn.addEventListener('click', () => { 
+                populatePrintPeriodFilter();
+                printModal.overlay.style.display = 'flex'; 
+            });
+            printModal.cancelBtn.addEventListener('click', () => { printModal.overlay.style.display = 'none'; });
+            printModal.confirmBtn.addEventListener('click', handlePrint);
         }
-        function updateShipDateButtonText() { const btn = document.getElementById('shipDateFilterBtn'); if (selectedShipDates.size === 0) btn.textContent = 'All'; else if (selectedShipDates.size === 1) btn.textContent = selectedShipDates.values().next().value; else btn.textContent = `${selectedShipDates.size} dates selected`; }
-        function refreshData() { loadAndRenderAll(true); }
+
+        function setupPlanningAreaSortable() {
+            const lists = document.querySelectorAll('.outfeed-queue-list');
+            lists.forEach(list => {
+                new Sortable(list, {
+                    group: {
+                        name: 'outfeed-queues',
+                        put: ['orders-table', 'outfeed-queues']
+                    },
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onStart: (evt) => {
+                        tableContainer.classList.add('drag-over-trash');
+                    },
+                    onEnd: async (evt) => {
+                        tableContainer.classList.remove('drag-over-trash');
+                        const { to, from, item, oldIndex, newIndex } = evt;
+                        
+                        const fromOutfeedId = from.dataset.outfeedId;
+                        const toOutfeedId = to.dataset.outfeedId;
+                        const movedTagItem = {
+                            tag: item.dataset.tag,
+                            order_id: item.dataset.orderId,
+                            standard_id: item.dataset.standardId
+                        };
+                        
+                        const newOrderedTags = Array.from(to.children).map(child => ({
+                            tag: child.dataset.tag,
+                            order_id: child.dataset.orderId,
+                            standard_id: child.dataset.standardId
+                        }));
+
+                        await apiCall('/api/update-queue-order', 'POST', { 
+                            fromOutfeedId: fromOutfeedId,
+                            toOutfeedId: toOutfeedId,
+                            movedTag: movedTagItem,
+                            newOrderedTags: newOrderedTags
+                        });
+                        await refreshData();
+                    },
+                    onAdd: async (evt) => {
+                        const { to, item, from } = evt;
+                        if (from.tagName.toLowerCase() === 'tbody') {
+                            const orderId = item.dataset.orderId;
+                            const standardId = item.dataset.standardId;
+                            const outfeedId = to.dataset.outfeedId;
+                            if (orderId && standardId && outfeedId) {
+                                await apiCall('/api/plan-order', 'POST', { orderId: parseInt(orderId), standardId: standardId, outfeedIds: [parseInt(outfeedId)], isHighPriority: false });
+                                item.remove();
+                                await refreshData();
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        
+        function setupTableDragAndDrop() {
+            const tableBody = tableContainer.querySelector('tbody');
+            if (!tableBody) return;
+
+            new Sortable(tableBody, {
+                group: { 
+                    name: 'orders-table', 
+                    pull: 'clone',
+                    put: false
+                },
+                sort: false,
+                handle: '.draggable-handle',
+                onClone: (evt) => {
+                    const origEl = evt.item;
+                    const cloneEl = document.createElement('div');
+                    cloneEl.className = 'sortable-ghost';
+                    cloneEl.textContent = `Planning: #${origEl.dataset.orderId}`;
+                    cloneEl.dataset.orderId = origEl.dataset.orderId;
+                    cloneEl.dataset.standardId = origEl.dataset.standardId;
+                    evt.clone.replaceWith(cloneEl);
+                },
+            });
+
+            new Sortable(tableContainer, {
+                group: {
+                    name: 'trash-can',
+                    put: ['outfeed-queues']
+                },
+                onAdd: async (evt) => {
+                    const { item, from } = evt;
+                    const tag = item.dataset.tag;
+                    const outfeedId = from.dataset.outfeedId;
+                    if (tag) {
+                        await apiCall('/api/unplan-order', 'POST', { tag: tag, outfeedId: outfeedId });
+                        item.remove();
+                        await refreshData();
+                    }
+                }
+            });
+        }
+        
+        async function refreshData() { await loadAndRenderAll(true); }
         
         async function loadAndRenderAll(keepFilters) {
-            const prevSelections = keepFilters ? Object.fromEntries(Object.entries(filters).map(([k,v]) => [k,v.value])) : {};
-            tableContainer.innerHTML = `<p class="loading">Cargando datos de órdenes y logos...</p>`;
-            const [ordersResponse, logosResponse] = await Promise.all([
-                apiCall('/api/orders'),
-                apiCall('/api/logos')
+            tableContainer.innerHTML = `<p class="loading">Cargando datos de órdenes y estado...</p>`;
+            const [ordersResponse, logosResponse, outfeedsResponse, reconcileResponse] = await Promise.all([ 
+                apiCall('/api/orders'), 
+                apiCall('/api/logos'),
+                apiCall('/api/outfeeds'),
+                apiCall('/api/reconcile', 'POST')
             ]);
-            if (!ordersResponse.success || !Array.isArray(ordersResponse[0]?.data)) {
-                tableContainer.innerHTML = `<p class="error">Error: No se pudieron cargar los datos de las órdenes desde la API externa.</p>`;
-                return;
-            }
+
+            if (ordersResponse.isError || !Array.isArray(ordersResponse?.[0]?.data)) { tableContainer.innerHTML = `<p class="error">Error: No se pudieron cargar las órdenes.</p>`; console.error("Respuesta de /api/orders no válida:", ordersResponse); return; }
             allOrders = ordersResponse[0].data.filter(o => ['cerrada', 'activa'].includes(o.estado_marketer_order) && o.fecha_envio);
-            if (logosResponse.success && Array.isArray(logosResponse.data)) {
-                logoMap = logosResponse.data.reduce((acc, item) => {
-                    acc[item.marketer_name] = item.logo_filename;
-                    return acc;
-                }, {});
-            } else {
-                console.warn("No se pudieron cargar los logos de los marketers. Se usarán iniciales.");
-                logoMap = {};
-            }
-            tableContainer.innerHTML = `<p class="loading">Reconciliando y actualizando estado...</p>`;
-            const reconcileResponse = await apiCall('/api/reconcile', 'POST');
-            if (!reconcileResponse.success || !reconcileResponse.state) {
-                tableContainer.innerHTML = `<p class="error">Fallo en la carga de estado. Por favor, revise la consola del servidor y recargue.</p>`
-                return;
-            }
-            state = reconcileResponse.state;
-            filterKeys.forEach(k => { if (k !== 'commercialStatus' && k !== 'packingStatus') { populateFilterOptions(k, allOrders, 'all'); } });
-            if (keepFilters) {
-                Object.keys(prevSelections).forEach(k => { if(filters[k]) filters[k].value = prevSelections[k]; });
-            } else {
-                filters.commercialStatus.value = 'open';
-                filters.packingStatus.value = 'all';
-                filters.timeframe.value = 'today_past';
+            
+            if (logosResponse?.success && Array.isArray(logosResponse.data)) { logoMap = logosResponse.data.reduce((acc, item) => { acc[item.marketer_name] = item.marketer_name; acc[item.marketer_name] = item.logo_filename; return acc; }, {}); } else { console.warn("No se pudieron cargar los logos."); logoMap = {}; }
+            
+            if (outfeedsResponse?.success && Array.isArray(outfeedsResponse.data)) { allOutfeeds = outfeedsResponse.data; } else { console.error("Error: No se pudieron cargar los outfeeds."); allOutfeeds = []; }
+            
+            if (reconcileResponse.isError || !reconcileResponse?.success || !reconcileResponse.state) { tableContainer.innerHTML = `<p class="error">Fallo en la carga de estado.</p>`; console.error("Respuesta de /api/reconcile no válida:", reconcileResponse); return; }
+            
+            state.loads = reconcileResponse.state.loads || {};
+            state.priorities = reconcileResponse.state.priorities || {};
+            state.planningState.queues = reconcileResponse.state.queues || {};
+            state.planningState.statuses = reconcileResponse.state.statuses || {};
+            
+            populateTimeframeFilter(allOrders);
+
+            if (!keepFilters) {
+                for (const config of Object.values(columnFilterConfig)) {
+                    config.set.clear();
+                }
+                timeframeFilter.value = 'today_past';
             }
             applyFiltersAndRender();
         }
-        
         document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('toggle-panel-btn');
+            if (toggleBtn.querySelector('svg path')) { toggleBtn.querySelector('svg path').setAttribute('d', 'M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z'); }
             setupEventListeners();
             loadAndRenderAll(false);
             updateActionButtonsState();
